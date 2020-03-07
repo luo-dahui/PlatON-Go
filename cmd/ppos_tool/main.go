@@ -366,6 +366,7 @@ func getRlpData(funcType uint16, cfg *decDataConfig) string {
 	case 1100:
 	case 1101:
 	case 1102:
+	case 5000:
 	case 1103:
 		{
 			addr, _ := rlp.EncodeToBytes(cfg.P1103.Addr.Bytes())
