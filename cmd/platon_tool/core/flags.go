@@ -3,6 +3,11 @@ package core
 import "gopkg.in/urfave/cli.v1"
 
 var (
+	ActionFlag = cli.StringFlag{
+		Name:  "action",
+		Usage: "rpc api name",
+	}
+
 	ConfigPathFlag = cli.StringFlag{
 		Name:  "config",
 		Usage: "config path",
@@ -71,6 +76,36 @@ var (
 		Usage: "transfer value",
 	}
 
+	testCmdFlags = []cli.Flag{
+		ConfigPathFlag,
+		ActionFlag,
+	}
+	// 普通查詢相關
+	AddressFlag = cli.StringFlag{
+		Name:  "address",
+		Usage: "the Account address",
+	}
+	TxHashFlag = cli.StringFlag{
+		Name:  "txhash",
+		Usage: "the transaction hash",
+	}
+
+	OrdinaryCallCmdFlags = []cli.Flag{
+		ConfigPathFlag,
+		ActionFlag,
+		AddressFlag, // 查询余额等
+		TxHashFlag,  // 交易hash
+	}
+
+	// 经济模型查询相关
+	EcoModelCallCmdFlags = []cli.Flag{
+		ConfigPathFlag,
+		ActionFlag,
+		AddressFlag, // 查询余额等
+		TxHashFlag,  // 交易hash
+	}
+
+	// 合約相關
 	deployCmdFlags = []cli.Flag{
 		ContractWasmFilePathFlag,
 		ContractAbiFilePathFlag,

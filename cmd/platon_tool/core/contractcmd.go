@@ -12,6 +12,13 @@ import (
 )
 
 var (
+	TestCmd = cli.Command{
+		Name:   "test",
+		Usage:  "test connect a node",
+		Action: test,
+		Flags:  testCmdFlags,
+	}
+
 	DeployCmd = cli.Command{
 		Name:   "deploy",
 		Usage:  "deploy a contract",
@@ -27,6 +34,23 @@ var (
 		Flags:   invokeCmdFlags,
 	}
 )
+
+func test(c *cli.Context) error {
+	action := c.String("action")
+	parseConfigJson(c.String(ConfigPathFlag.Name))
+
+	params := make([]interface{}, 2)
+	params[0] = "0x2ad92510527a4b97ffbe9a390207d42d305bedb6"
+	params[1] = "latest"
+
+	r, _ := Send(params, action)
+	resp := parseResponse(r)
+	amount, _ := hexutil.DecodeBig(resp.Result)
+
+	fmt.Printf("\nresult: %v LAT\n", amount)
+
+	return nil
+}
 
 func deploy(c *cli.Context) error {
 
