@@ -1,0 +1,297 @@
+benbaley
+p1@t0N20181213
+
+
+工作内容：
+1.提供财务工具；
+
+2.走读并审核惩罚和奖励模块的代码；
+
+2.调研并解决issues:https://github.com/PlatONnetwork/PlatON-Go/issues/1127；
+
+
+【2020.02.10 ~ 2020.02.14】
+【02.10】
+http://192.168.18.61:8090/pages/viewpage.action?pageId=20283470
+1.罗列拉力赛文档，财务文档，运维文档的详情；
+2.列出文档工作计划；
+3.更新0.8.0部分文档
+
+【02.11】
+1.根据文档布局图创建官网文档测试库并分配权限给相关人员用于前期测试；
+2.关于在测试网展开拉力赛活动底层适配,删除--rallyNet参数，修改为--testNet参数；以及解决测试用例的相关工作；
+
+【02.12】
+1.完成mtool的文档修改并集成到官网文档测试库，以及测试通过
+(文档格式，跨文档，跨章节链接跳转)
+
+【02.13】
+1.官网文档布局调整
+2.调研neo的md文档和官网html的映射关系。
+3.调研neo文档：fork neo文档之后用github pages直接构建失败;
+
+4.支持0.8.0平行测试网的工作。
+(1)批量生成质押账户冷钱包和观察者钱包
+(2)批量生成收益账户冷钱包和观察者钱包
+(3)使用财务工具批量转账
+(4)使用财务工具批量质押
+
+【02.14】
+1.调研并解决官网文档html的img标签问题
+2.集成部分官网文档，包括开发模块的SDK
+3.辅助负责文档编写的同事，完成官网文档的编写，优化和集成工作。
+4.修改财务工具生成钱包文件的salt参数为32个字节
+5.完成0.8.0财务工具环境部署并完成平行测试网自营节点的批量质押
+
+【02.15】
+1.验证批量生成验证节点配置文件工具与0.8.0版本MTOOL是否匹配;
+2.优化文档：替换MTool和财务工具文档中choco的安装方式为离线安装包的安装方式;
+3.打包0.8.0的财务工具和MTool离线安装包;
+2.官网文档的布局调整，布局参考NEO公链的官网文档;
+3.官网文档交叉测试;
+
+【02.17】
+1.优化财务工具文档：
+(1)替换财务工具文档中choco的安装方式为离线安装包的安装方式;
+
+
+2.确定MTool问题
+(1)MTool发版仓库的规则：zip包路径等
+(2)MTool下载路径规则：XXXX/MTool.zip
+(3)MTool使用的相关文档中，指定的MTool版本号是否需要有个地方提供给用户，类似release或公告链接
+
+3.完成平行测试网自营节点的批量转账和批量质押
+
+4.验证财务工具文档
+
+【02.18】
+1.完成文档修改：
+(1) 添加MTool文档参数提案相关说明
+(2) 删除sidebar中的一级目录
+(3) 添加MTool概述文档，并修改相关链接
+(4) 添加比例分红相关说明
+
+2.完成脚本修改
+(1) 修改nginx配置脚本：添加比例分红参数模板
+(2) 修改配置验证节点脚本：添加比例分红参数
+
+3.调研docsify插件:flexible-alerts,并集成到官网文档中，
+https://github.com/zanfab/docsify-plugin-flexible-alerts
+
+3.完成备份拉力赛文档和官网文档
+
+【02.19】
+完成官网文档工作：
+(1).检查更新官网文档。
+(2).清空原官网文档仓库。
+(3).官网文档上线部署。
+(4).检查官网和文档的相关链接。
+
+测试网支援工作
+(1).提供MTool和财务工具的安装部署指导。
+
+【02.20】
+1.调研验证docsify前后章插件并集成到官网文档
+
+http://192.168.18.61:8090/pages/viewpage.action?pageId=20287994
+2.拉力赛社区问题解答并解决问题
+(1) mtool验证节点所需的nodeid和blspub问题
+(2) nginx生成验证人配置文件模板错误的问题
+(3) 修改文档的问题：ppa的安装方式，启动命令网络类型
+(4) 添加choco安装脚本以及文档说明：mtool配置验证人的脚本中需要使用choco安装curl,sed,awk等辅助工具
+
+3.参加拉力赛
+(1) 申请机器，申请Energon
+(2) 部署节点并编写操作指南文档
+
+
+【02.21】
+1.参加拉力赛
+(1) 申请机器，申请Energon
+(2) 部署节点并编写操作指南文档
+
+2.解决nginx报403的问题
+http://192.168.18.61:8090/pages/viewpage.action?pageId=20287994
+
+就是执行validator_conf.sh的脚本的时候,会通过curl命令去nginx服务器下载验证节点的模板文件,
+但是那个文件的属主是root用户,所以curl下载失败了
+
+2.wasm合约评审
+代码地址、分支名、文档地址详见提测申请：http://192.168.18.61:8090/pages/viewpage.action?pageId=20283428
+wasm测试合约源码：https://github.com/PlatONnetwork/PlatON-Go/tree/feature/wasm/cases/ContractsAutoTests/src/test/resources/contracts/wasm
+编译工具：https://github.com/PlatONnetwork/PlatON-CDT/tree/feature/wasm
+
+
+【】
+1.github上直接使用文档链接跳转失败(官网上可以正常跳转)
+原因：github上跳转到具体某个文档的章节，需要加#;
+而官网上不需要加#;
+
+personal.unlockAccount(platon.accounts[0],"88888888",36000)
+
+【02.24】
+1.财务工具添加批量委托的功能
+(1) 批量生成委托待签名文件
+(2) 批量生成签名文件
+(3) 批量发送交易
+
+2.拉力赛社区问题解答并解决问题
+(1) 解决唐总ssl认证和只有钱包私钥怎么质押的问题
+(2) bls public key错误的问题
+
+【02.25】
+1.完成财务工具添加批量委托的功能
+(1) 批量生成签名文件
+(2) 批量发送交易
+(3) 生成发送批量委托交易统计报表，包括交易hash和结果信息
+
+2.完成财务工具文档批量委托的操作说明
+
+3.拉力赛社区问题解答并解决问题
+(1) 解决invalid sender的问题
+(2) 解决ubuntu源码编译缺少bls库的问题
+(3) keytore节点质押和版本声明失败：未升级mtool,升级时未卸载干净；
+
+【02.26】
+1.优化文档相关的脚本并修改文档中的提示
+(1)相关的中文说明改成英文说明
+update_platon.sh
+verify_transaction.sh
+verify_votResult.sh
+
+(2) 简化不需要的步骤
+删除mysql安装以及账户密码设置的步骤
+mtool_install.sh   
+
+(3) 修改用户输入chainid的友好提示
+validator_conf.sh 
+validator_conf.bat
+
+
+2.官网文档工作
+(1)在私有的文档仓库创建英文文档目录并与中文文档对应排版
+(2)在官网页面添加中英切换的功能,并测试通过可以正常切换显示
+(3)编写在线MTool使用手册和离线MTool使用手册相关的英文文档
+
+【02.27】
+1.编写官网文档工作
+(1)根据吴维所提问题进行修改MTool使用文档
+(2)编写在线MTool使用手册和离线MTool使用手册相关的英文文档
+(3)修改相关的英文文档链接
+(4)MTool安装包环境变量优化:安装多次MTool,MTool相关的环境变量会保存多份,修改为只配置最新的一次安装路径作为MTool相关的环境变量
+
+2.测试网自营节点退出和恢复方案沟通
+
+【02.28】
+1.官网文档工作
+(1).检查测试在线MTool使用手册和离线MTool使用手册相关的英文文档
+(2).MTool相关文档添加验证人配置文件说明及节点设置头像的相关操作
+https://forum.latticex.foundation/t/topic/357
+
+2.调研mermaid插件在docsify的使用(未验证成功,图形界面显示不出来)
+https://angry-swanson-b4e47b.netlify.com/zh-cn/markdown
+https://sh.gg/posts/2017/docsify-mermaid-plugin/
+
+【02.29】
+docsify插件相关
+1.完成mermaid插件在docsify的使用
+2.分页插件pagination没法做到中英文切换,统一使用英文
+
+官网文档工作
+1.优化在线MTool使用手册和离线MTool使用手册相关的英文文档
+2.检查测试节点相关的英文文档
+
+
+【03.02】
+官网文档工作
+1.修改文档测试出现的问题
+http://192.168.18.61:8090/pages/viewpage.action?pageId=20286014
+
+2.官网路径兼容问题
+调整共识文档的图片标签路径
+
+辅助财务、运营通过财务工具和MTool完成解质押操作
+
+3.支持量化交易社区tushare的节点安装部署节点
+
+【03.03】
+官网文档工作
+1.文档添加分红比例万分比单位以及实例的说明
+2.修改PlatON节点安装部署手册文档与测试网匹配
+
+evm合约相关工作
+1.学习evm合约开发
+2.部署evm合约在测试网
+3.测试evm合约
+
+对接Hashkey交易所
+1.了解Hashkey交易所
+
+
+【03.04】
+拉力赛社区问题解答并解决问题
+1.truffle-platon部署合约时报"contract creation is not allowed"错误(底层版本不对)
+2.质押失败相关问题
+
+官网文档工作
+1.节点相关文档缺少ntp启动的命令(已添加完成)
+2.节点安装手册中的ppa安装缺少ppa源工具的安装步骤：
+if ! command -v add-apt-repository >/dev/null 2>&1; then  sudo apt-get update && sudo apt-get install -y software-properties-common; fi;
+3.修改文档和MTool安装脚本提示不匹配的问题
+4.修改相关安装部署升级等文档的版本号为0.10.0
+
+对接Hashkey交易所工作进度
+1.注册Hashkey Pro交易所账号
+2.熟悉Hashkey Pro交易所币币交易的流程
+https://pro.hashkey.com/
+
+(if ! command -v unzip;then sudo apt install unzip; fi;) && unzip mtool-client.zip && mv mtool-client*/ mtool-client && cd mtool-client
+
+
+【03.05】
+竞猜合约及测试case
+
+对接Hashkey交易所工作进度
+1.熟悉Hashkey Pro交易所的API和对接流程
+
+官网中英文档工作
+1.更新升级提案的提案id
+2.同步私有仓库的文档到官网文档，并开放官网的英文文档
+3.Ubuntu源码编译文档缺少安装依赖库
+4.修改启动命令为进程挂起的方式：nohup
+5.验证人信息修改的官网地址缺少http
+6.解决nginx安装遇到的权限问题和mtool环境变量问题
+
+节点维护
+1.节点升级投票操作
+
+【03.06】
+测试网节点维护
+1.讨论模拟社区节点运营：提供相关的自动化脚本与外部节点pk
+
+【云图矿业】相关工作：
+1.提供自动委托，质押等相关功能的python脚本(参数做成可配置)
+2.在测试网上进行验证脚本的相关功能
+3.编写脚本的操作说明文档
+
+http://192.168.18.61:8090/pages/viewpage.action?pageId=21302226
+
+测试网节点维护
+1.增持质押操作
+2.运行shell脚本，自动委托
+
+mtool-client tx transfer --keystore $MTOOLDIR/keystore/reward.json --amount "5162" --recipient "0x1708aebb40044977e7aae5472e7a35dae59510fc" --config $MTOOLDIR/validator/validator_config.json
+
+mtool-client account balance staking.json --config $MTOOLDIR/validator/validator_config.json
+mtool-client account balance reward.json --config $MTOOLDIR/validator/validator_config.json
+
+
+
+【工具】
+能否写个工具，创建多个钱包地址，然后把钱分散转入到这些地址，批量委托
+
+
+
+
+
+
