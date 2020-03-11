@@ -12,7 +12,6 @@ p1@t0N20181213
 
 【2020.02.10 ~ 2020.02.14】
 【02.10】
-http://192.168.18.61:8090/pages/viewpage.action?pageId=20283470
 1.罗列拉力赛文档，财务文档，运维文档的详情；
 2.列出文档工作计划；
 3.更新0.8.0部分文档
@@ -29,7 +28,6 @@ http://192.168.18.61:8090/pages/viewpage.action?pageId=20283470
 1.官网文档布局调整
 2.调研neo的md文档和官网html的映射关系。
 3.调研neo文档：fork neo文档之后用github pages直接构建失败;
-
 4.支持0.8.0平行测试网的工作。
 (1)批量生成质押账户冷钱包和观察者钱包
 (2)批量生成收益账户冷钱包和观察者钱包
@@ -53,15 +51,11 @@ http://192.168.18.61:8090/pages/viewpage.action?pageId=20283470
 【02.17】
 1.优化财务工具文档：
 (1)替换财务工具文档中choco的安装方式为离线安装包的安装方式;
-
-
 2.确定MTool问题
 (1)MTool发版仓库的规则：zip包路径等
 (2)MTool下载路径规则：XXXX/MTool.zip
 (3)MTool使用的相关文档中，指定的MTool版本号是否需要有个地方提供给用户，类似release或公告链接
-
 3.完成平行测试网自营节点的批量转账和批量质押
-
 4.验证财务工具文档
 
 【02.18】
@@ -70,15 +64,10 @@ http://192.168.18.61:8090/pages/viewpage.action?pageId=20283470
 (2) 删除sidebar中的一级目录
 (3) 添加MTool概述文档，并修改相关链接
 (4) 添加比例分红相关说明
-
 2.完成脚本修改
 (1) 修改nginx配置脚本：添加比例分红参数模板
 (2) 修改配置验证节点脚本：添加比例分红参数
-
 3.调研docsify插件:flexible-alerts,并集成到官网文档中，
-https://github.com/zanfab/docsify-plugin-flexible-alerts
-
-3.完成备份拉力赛文档和官网文档
 
 【02.19】
 完成官网文档工作：
@@ -86,7 +75,6 @@ https://github.com/zanfab/docsify-plugin-flexible-alerts
 (2).清空原官网文档仓库。
 (3).官网文档上线部署。
 (4).检查官网和文档的相关链接。
-
 测试网支援工作
 (1).提供MTool和财务工具的安装部署指导。
 
@@ -290,8 +278,14 @@ mtool-client account balance reward.json --config $MTOOLDIR/validator/validator_
 【工具】
 能否写个工具，创建多个钱包地址，然后把钱分散转入到这些地址，批量委托
 
+【03.09】
+电脑升级
+升级脚本编写
 
+【03.10】
+1.0.10.1升级脚本测试验证和修改
 
+2.
 
 
 

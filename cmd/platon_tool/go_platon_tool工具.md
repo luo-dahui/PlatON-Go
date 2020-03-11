@@ -3,7 +3,28 @@ go_platon_tool工具
 是一款go语言版的platon工具，主要用于发送platon经济模型相关的交易和查询命令
 
 
+环境准备
+- windows
+1. 安装choco
+```
+Set-ExecutionPolicy RemoteSigned \
+iwr https://chocolatey.org/install.ps1 -UseBasicParsing | iex
+```
 
+2. 安装golang
+```
+choco install golang
+```
+
+3. 安装mingw（包括gcc,g++等）
+```
+choco install mingw
+```
+
+4. 配置环境变量（GOROOT,GOPATH以及bls库）
+D:\core\PlatonGo\src\github.com\PlatONnetwork\PlatON-Go\crypto\bls\bls_win\lib
+
+- ubuntu
 
 
 go_platon_tool命令
