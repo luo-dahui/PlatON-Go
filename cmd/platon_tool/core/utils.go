@@ -8,7 +8,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/PlatONnetwork/PlatON-Go/common"
 	"github.com/PlatONnetwork/PlatON-Go/common/hexutil"
+	"github.com/PlatONnetwork/PlatON-Go/p2p/discover"
 	"github.com/PlatONnetwork/PlatON-Go/rlp"
 )
 
@@ -44,6 +46,23 @@ type RawTxParams struct {
 	Nonce int64 `json:"Nonce"`
 }
 
+// 查询经济模型合约接口
+type CallEcomodelParams struct {
+	To   string `json:"to"`
+	Data string `json:"data"`
+}
+
+type Staking struct {
+	NodeId          discover.NodeID `json:"nodeid"`
+	DelegateAddress common.Address  `json:"delegateAddress"`
+}
+
+type Gov struct {
+	ProposalID common.Hash `json:"proposalid"`
+	Module     string      `json:"module"`
+	Name       string      `json:"name"`
+}
+
 type DeployParams struct {
 	From     string `json:"from"`
 	Gas      string `json:"gas"`
@@ -52,10 +71,12 @@ type DeployParams struct {
 }
 
 type Config struct {
-	From     string `json:"from"`
-	Gas      string `json:"gas"`
-	GasPrice string `json:"gasPrice"`
-	Url      string `json:"url"`
+	From     string  `json:"from"`
+	Gas      string  `json:"gas"`
+	GasPrice string  `json:"gasPrice"`
+	Url      string  `json:"url"`
+	Staking  Staking `json:"staking"`
+	Gov      Gov     `json:"gov"`
 }
 
 type FuncDesc struct {

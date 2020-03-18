@@ -8,6 +8,11 @@ var (
 		Usage: "rpc api name",
 	}
 
+	FuncNameFlag = cli.StringFlag{
+		Name:  "funcName",
+		Usage: "economic model function name",
+	}
+
 	ConfigPathFlag = cli.StringFlag{
 		Name:  "config",
 		Usage: "config path",
@@ -98,11 +103,34 @@ var (
 	}
 
 	// 经济模型查询相关
+	NodeIdFlag = cli.StringFlag{
+		Name:  "nodeId",
+		Usage: "the Node ID",
+	}
+	ProposalIDFlag = cli.StringFlag{
+		Name:  "proposalID",
+		Usage: "the Proposal ID",
+	}
+
+	ModuleFlag = cli.StringFlag{
+		Name:  "module",
+		Usage: "the module",
+	}
+
+	NameFlag = cli.StringFlag{
+		Name:  "name",
+		Usage: "the param's name of module",
+	}
+
 	EcoModelCallCmdFlags = []cli.Flag{
-		ConfigPathFlag,
 		ActionFlag,
-		AddressFlag, // 查询余额等
-		TxHashFlag,  // 交易hash
+		FuncNameFlag,
+		AddressFlag,
+		NodeIdFlag,
+		ProposalIDFlag,
+		ModuleFlag,
+		NameFlag,
+		ConfigPathFlag,
 	}
 
 	// 合約相關
