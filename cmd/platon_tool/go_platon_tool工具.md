@@ -58,12 +58,6 @@ D:\core\PlatonGo\src\github.com\PlatONnetwork\PlatON-Go\crypto\bls\bls_win\lib
 >- staking:
 
 
-
-
-
-
-
-
 ## 交易相关命令
 
 ### 普通交易(Ordinary_Tx)
@@ -248,18 +242,29 @@ test --config E://code//PlatON//src//github.com//PlatONnetwork//PlatON-Go//cmd//
 ./platon_tool.exe call_ecomodel --action slashing --funcName ZeroProduceNodeList --config D://config.json
 ```
 
-
-
 #### 锁仓计划
 
 合约地址： 0x1000000000000000000000000000000000000001
+
+- 获取锁仓信息(funcType:4100)
+
+```shell
+./platon_tool.exe call_ecomodel --action restricting --funcName GetRestrictingInfo --address "0x431c941dc25c92998fc6352f14db43556df506b6" --config D://config.json
+```
+
+> `--address`为锁仓释放到账账户地址，不输入时，从config.json配置文件里面的restricting.Address参数中读取.
 
 #### 奖励
 
 合约地址： 0x1000000000000000000000000000000000000006
 
+- 查询账户在各节点未提取委托奖励(funcType:5100)
 
+```shell
+./platon_tool.exe call_ecomodel --action reward --funcName getDelegateReward --address "0x914d53aad47dbe7d0186a608ef5c3538306a6f22" --nodeId "e2181d8dc731b14117ba6d982ce163fc7b9b14bbbaf9cb3c343ef72c24cf3ed568cac6ecbc30fddf9012320fab99f6be6ab37132d083cb514100bdb4b90fff5e" --config D://config.json
+```
 
-
+> - --address`为委托账户地址，不输入时，从config.json配置文件里面的reward.Address参数中读取，
+> - --nodeid为委托的节点id(单个)，不输入时，委托的节点id列表从config.json配置文件里面的reward.nodeIds参数中读取，nodeIds配置为空时，表示查询账户委托的所有节点。
 
 ### wams合约查询(Wasm_Call)

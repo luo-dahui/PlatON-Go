@@ -63,6 +63,15 @@ type Gov struct {
 	Name       string      `json:"name"`
 }
 
+type Restricting struct {
+	Account common.Address `json:"account"`
+}
+
+type Reward struct {
+	Account common.Address    `json:"account"`
+	NodeIds []discover.NodeID `json:"nodeIds"`
+}
+
 type DeployParams struct {
 	From     string `json:"from"`
 	Gas      string `json:"gas"`
@@ -71,12 +80,14 @@ type DeployParams struct {
 }
 
 type Config struct {
-	From     string  `json:"from"`
-	Gas      string  `json:"gas"`
-	GasPrice string  `json:"gasPrice"`
-	Url      string  `json:"url"`
-	Staking  Staking `json:"staking"`
-	Gov      Gov     `json:"gov"`
+	From        string      `json:"from"`
+	Gas         string      `json:"gas"`
+	GasPrice    string      `json:"gasPrice"`
+	Url         string      `json:"url"`
+	Staking     Staking     `json:"staking"`
+	Gov         Gov         `json:"gov"`
+	Restricting Restricting `json:"restricting"`
+	Reward      Reward      `json:"reward"`
 }
 
 type FuncDesc struct {

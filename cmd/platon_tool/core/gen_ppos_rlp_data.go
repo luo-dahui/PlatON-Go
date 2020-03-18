@@ -229,10 +229,6 @@ type decDataConfig struct {
 	P4100  Ppos_4100
 }
 
-// 查询参数
-type selParams struct {
-}
-
 func getRlpData(funcType uint16, cfg *decDataConfig, selParams interface{}) string {
 	rlpData := ""
 
@@ -329,7 +325,7 @@ func getRlpData(funcType uint16, cfg *decDataConfig, selParams interface{}) stri
 	case 1201:
 	case 1202:
 	case 5000:
-	case 1103:
+	case 1103, 4100:
 		{
 			// 委托地址
 			address := common.HexToAddress(selParams.(string))
@@ -502,10 +498,13 @@ func getRlpData(funcType uint16, cfg *decDataConfig, selParams interface{}) stri
 			params = append(params, account)
 			params = append(params, plans)
 		}
-	case 4100:
+	case 5100:
 		{
-			account, _ := rlp.EncodeToBytes(cfg.P4100.Account.Bytes())
+			reward := selParams.(Reward)
+			account, _ := rlp.EncodeToBytes(reward.Account)
+			nodeIds, _ := rlp.EncodeToBytes(reward.NodeIds)
 			params = append(params, account)
+			params = append(params, nodeIds)
 		}
 	default:
 		{

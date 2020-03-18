@@ -7,9 +7,14 @@ package core
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
+	"math/big"
 	"strings"
 
+	"github.com/PlatONnetwork/PlatON-Go/common"
+	"github.com/PlatONnetwork/PlatON-Go/common/hexutil"
+	"github.com/PlatONnetwork/PlatON-Go/p2p/discover"
 	"gopkg.in/urfave/cli.v1"
 )
 
@@ -50,9 +55,13 @@ var mapNameToFuncType = map[string]uint16{
 	"listGovernParam":     2106,
 
 	"ZeroProduceNodeList": 3002,
+
+	"GetRestrictingInfo": 4100,
+
+	"getDelegateReward": 5100,
 }
 
-func handleCall(rlpdata, toAddress string) (string, error) {
+func handleCall(rlpdata, toAddress string, v interface{}) (string, error) {
 
 	callEcomodelParams := CallEcomodelParams{
 		To:   toAddress,
@@ -76,7 +85,20 @@ func handleCall(rlpdata, toAddress string) (string, error) {
 	}
 	res_data, _ := hex.DecodeString(resp.Result)
 
+	json.Unmarshal(res_data, v)
+
 	return string(res_data), nil
+}
+
+type Ret struct {
+	NodeId     discover.NodeID `json:"nodeID"`
+	Reward     string          `json:"reward"`
+	StakingNum uint64          `json:"stakingNum"`
+}
+
+type RewardResult struct {
+	Code int32 `json:"Code"`
+	Ret  []Ret `json:"Ret"`
 }
 
 func call_ecomodel(c *cli.Context) error {
@@ -143,6 +165,48 @@ func call_ecomodel(c *cli.Context) error {
 			module = strings.ToLower(module)
 			rlp = getRlpData(mapNameToFuncType[funcName], nil, module)
 		}
+	case 4100:
+		{
+			// 锁仓金额释放到账账户
+			account := c.String("address")
+			if account == "" {
+				account = config.Restricting.Account.Hex()
+			}
+			rlp = getRlpData(mapNameToFuncType[funcName], nil, account)
+		}
+	case 5100:
+		{
+			// 查询账户在各节点未提取委托奖励
+			var reward Reward
+			account := c.String("address")
+			if account == "" {
+				account = config.Reward.Account.Hex()
+			}
+			reward.Account = common.HexToAddress(account)
+
+			// nodeid
+			nodeid := c.String("nodeId")
+			if nodeid == "" {
+				reward.NodeIds = config.Reward.NodeIds
+			} else {
+				node := discover.MustHexID(nodeid)
+				reward.NodeIds = append(reward.NodeIds, node)
+			}
+
+			rlp = getRlpData(mapNameToFuncType[funcName], nil, reward)
+			var res RewardResult
+			handleCall(rlp, mapNameToAddress[action], &res)
+			for i := 0; i < len(res.Ret); i++ {
+				fmt.Println("===============================")
+				fmt.Printf("nodeid: %s \n", res.Ret[i].NodeId.String())
+				fmt.Printf("stakingNumber: %d \n", res.Ret[i].StakingNum)
+				bigRes, _ := hexutil.DecodeBig(res.Ret[i].Reward)
+				balance := new(big.Int).Div(bigRes, big.NewInt(1e18))
+				fmt.Printf("reward: %vLAT\n", balance)
+			}
+
+			return nil
+		}
 	default:
 		{
 			fmt.Printf("funcName:%s is unknown!!!!", funcName)
@@ -150,7 +214,7 @@ func call_ecomodel(c *cli.Context) error {
 		}
 	}
 
-	result, _ := handleCall(rlp, mapNameToAddress[action])
+	result, _ := handleCall(rlp, mapNameToAddress[action], nil)
 	fmt.Printf("result:\n %s \n", result)
 
 	return nil

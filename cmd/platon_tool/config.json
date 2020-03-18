@@ -12,5 +12,12 @@
     "proposalid":"0x44c2b07551e3195acfc6ef674d78992bfeb445c7804f198c964ae6113af5a0e0",
     "module":"staking",
     "name":"stakeThreshold"
+  },
+  "restricting":{
+    "account":"0x914d53aad47dbe7d0186a608ef5c3538306a6f22"
+  },
+  "reward":{
+    "account":"0x914d53aad47dbe7d0186a608ef5c3538306a6f22",
+    "nodeIds":[]
   }
 }
