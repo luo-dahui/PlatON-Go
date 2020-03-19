@@ -37,15 +37,37 @@ D:\core\PlatonGo\src\github.com\PlatONnetwork\PlatON-Go\crypto\bls\bls_win\lib
 
 ### 配置文件config.json
 
-```
+```json
 {
-  "url":"http://192.168.112.33:6789",
-  "gas": "0xcf08",
-  "gasPrice": "0x2d79883d2000",
-  "from":"0x60ceca9c1290ee56b98d4e160ef0453f7c40d219",
-  "staking":{
-
-  }
+    "chainId":101,
+    "url":"http://192.168.112.33:6666",
+    "tx":{
+        "from":"0x914d53aad47dbe7d0186a608ef5c3538306a6f22",
+        "to":"0x1708aebb40044977e7aae5472e7a35dae59510fc",
+        "gas":"2100000",
+        "gasPrice":"1000000000000",
+        "value":"1000000000000000000",
+        "wallet":"D://reward.json"
+    },
+    "call":{
+        "txhash":"0xb119d5a0f47965d2289fbc91366739df99a45cdc6b1805f7e60bd94257c836d"
+    },
+    "staking":{
+        "nodeid":"0xe2181d8dc731b14117ba6d982ce163fc7b9b14bbbaf9cb3c343ef72c24cf3ed568cac6ecbc30fddf9012320fab99f6be6ab37132d083cb514100bdb4b90fff5e",
+        "delegateAddress":"0x914d53aad47dbe7d0186a608ef5c3538306a6f22"
+    },
+    "gov":{
+        "proposalid":"0x44c2b07551e3195acfc6ef674d78992bfeb445c7804f198c964ae6113af5a0e0",
+        "module":"staking",
+        "name":"stakeThreshold"
+    },
+    "restricting":{
+        "account":"0x914d53aad47dbe7d0186a608ef5c3538306a6f22"
+    },
+    "reward":{
+        "account":"0x914d53aad47dbe7d0186a608ef5c3538306a6f22",
+        "nodeIds":[]
+    }
 }
 ```
 
@@ -58,11 +80,51 @@ D:\core\PlatonGo\src\github.com\PlatONnetwork\PlatON-Go\crypto\bls\bls_win\lib
 >- staking:
 
 
+
+----
+
+
+
 ## 交易相关命令
 
-### 普通交易(Ordinary_Tx)
+### 普通交易(Tx_Ordinary)
 
-### 经济模型合约(EcoModel_Tx)
+- 代理签名方式
+
+```shell
+./platon_tool.exe sendTransaction --from "0x914d53aad47dbe7d0186a608ef5c3538306a6f22" --to "0x1708aebb40044977e7aae5472e7a35dae59510fc" --value "1000000000000000000" --config D://config.json
+```
+
+> 此种方式要求钱包在节点上的keystore目录下。并提示输入from地址对应的钱包密码。
+
+- 私钥签名方式
+
+```shell
+./platon_tool.exe sendRawTransaction --wallet D://reward.json --to "0x1708aebb40044977e7aae5472e7a35dae59510fc" --value "1000000000000000000" --config D://config.json
+```
+
+>此种方式需要将钱包保存在本地，不需要将钱包放到节点上。
+>
+>- wallet: 发交易的钱包文件路径。（不输入时，从config.json配置文件里面的tx.wallet参数中读取）
+>- to: 接收转账地址。（不输入时，从config.json配置文件里面的tx.to参数中读取）
+>- value: 转账金额（单位：von, 不输入时，从config.json配置文件里面的tx.value参数中读取）
+>- config: 参数配置文件，保存用于签名的chainId。
+
+- 获取交易回执
+
+```shell
+./platon_tool.exe getTxReceipt --hash "0x8403252dadc7abc1bf73b859566a304bb55bc6eac7f69d537bc64a9cf7a37b03" --config D://config.json
+```
+
+> - `--hash` 为交易hash，不输入时，从config.json配置文件里面的call.txhash参数中读取
+
+
+
+--------------
+
+
+
+### 经济模型合约(Tx_EcoModel)
 
 [接口说明文档](http://192.168.9.66/Juzix-Platon-Doc/Dark/blob/develop/03-%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/01-%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/PlatON%E5%BA%95%E5%B1%82/PlatON%E5%86%85%E7%BD%AE%E5%90%88%E7%BA%A6%E5%8F%8ARPC%E6%8E%A5%E5%8F%A3%E8%AF%B4%E6%98%8E.md#withdrawDelegateReward )
 
@@ -88,7 +150,17 @@ D:\core\PlatonGo\src\github.com\PlatONnetwork\PlatON-Go\crypto\bls\bls_win\lib
 
 ### 
 
+---------
+
+
+
 ### wasm合约(Wasm_Tx)
+
+
+
+
+
+---
 
 
 
@@ -129,6 +201,12 @@ test --config E://code//PlatON//src//github.com//PlatONnetwork//PlatON-Go//cmd//
 ```
 
 通过rpc接口直接查询，工具不提供此类查询，意义不大。
+
+
+
+---
+
+
 
 ### 经济模型合约(Call_EcoModel)
 
@@ -249,7 +327,7 @@ test --config E://code//PlatON//src//github.com//PlatONnetwork//PlatON-Go//cmd//
 - 获取锁仓信息(funcType:4100)
 
 ```shell
-./platon_tool.exe call_ecomodel --action restricting --funcName GetRestrictingInfo --address "0x431c941dc25c92998fc6352f14db43556df506b6" --config D://config.json
+./platon_tool.exe call_ecomodel --action restricting --funcName GetRestrictingInfo --address "e697317a9f490f3f4847b995d819cf79a3b47a91" --config D://config.json
 ```
 
 > `--address`为锁仓释放到账账户地址，不输入时，从config.json配置文件里面的restricting.Address参数中读取.
@@ -266,5 +344,11 @@ test --config E://code//PlatON//src//github.com//PlatONnetwork//PlatON-Go//cmd//
 
 > - --address`为委托账户地址，不输入时，从config.json配置文件里面的reward.Address参数中读取，
 > - --nodeid为委托的节点id(单个)，不输入时，委托的节点id列表从config.json配置文件里面的reward.nodeIds参数中读取，nodeIds配置为空时，表示查询账户委托的所有节点。
+
+
+
+-----
+
+
 
 ### wams合约查询(Wasm_Call)

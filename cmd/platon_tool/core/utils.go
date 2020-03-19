@@ -4,12 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math/big"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/PlatONnetwork/PlatON-Go/cmd/utils"
 	"github.com/PlatONnetwork/PlatON-Go/common"
 	"github.com/PlatONnetwork/PlatON-Go/common/hexutil"
+	"github.com/PlatONnetwork/PlatON-Go/console"
+	"github.com/PlatONnetwork/PlatON-Go/core/types"
 	"github.com/PlatONnetwork/PlatON-Go/p2p/discover"
 	"github.com/PlatONnetwork/PlatON-Go/rlp"
 )
@@ -79,11 +83,24 @@ type DeployParams struct {
 	Data     string `json:"data"`
 }
 
+type Tx struct {
+	From     string `json:"from"`
+	To       string `json:"to"`
+	Gas      string `json:"gas"`
+	GasPrice string `json:"gasPrice"`
+	Value    string `json:"value"`
+	Wallet   string `json:"wallet"`
+}
+
+type Call struct {
+	TxHash string `json:"txhash"`
+}
+
 type Config struct {
-	From        string      `json:"from"`
-	Gas         string      `json:"gas"`
-	GasPrice    string      `json:"gasPrice"`
+	ChainID     *big.Int    `json:"chainId"`
 	Url         string      `json:"url"`
+	Tx          Tx          `json:"tx"`
+	Call        Call        `json:"call"`
 	Staking     Staking     `json:"staking"`
 	Gov         Gov         `json:"gov"`
 	Restricting Restricting `json:"restricting"`
@@ -118,16 +135,17 @@ type Receipt struct {
 	Jsonrpc string `json:"jsonrpc"`
 	Id      int    `json:"id"`
 	Result  struct {
-		BlockHash         string `json:"blockHash"`
-		BlockNumber       string `json:"blockNumber"`
-		ContractAddress   string `json:"contractAddress"`
-		CumulativeGasUsed string `json:"cumulativeGas_used"`
-		From              string `json:"from"`
-		GasUsed           string `json:"gasUsed"`
-		Root              string `json:"root"`
-		To                string `json:"to"`
-		TransactionHash   string `json:"transactionHash"`
-		TransactionIndex  string `json:"transactionIndex"`
+		BlockHash         string       `json:"blockHash"`
+		BlockNumber       string       `json:"blockNumber"`
+		ContractAddress   string       `json:"contractAddress"`
+		CumulativeGasUsed string       `json:"cumulativeGas_used"`
+		From              string       `json:"from"`
+		GasUsed           string       `json:"gasUsed"`
+		Logs              []*types.Log `json:"logs"              gencodec:"required"`
+		Root              string       `json:"root"`
+		To                string       `json:"to"`
+		TransactionHash   string       `json:"transactionHash"`
+		TransactionIndex  string       `json:"transactionIndex"`
 	} `json:"result"`
 }
 
@@ -236,4 +254,24 @@ func encodeParam(abiPath string, funcName string, funcParams string) error {
 	fmt.Printf(hexutil.Encode(paramBytes))
 
 	return nil
+}
+
+// 输入密码
+func promptPassphrase(confirmation bool) string {
+	passphrase, err := console.Stdin.PromptPassword("Passphrase: ")
+	if err != nil {
+		utils.Fatalf("Failed to read passphrase: %v", err)
+	}
+
+	if confirmation {
+		confirm, err := console.Stdin.PromptPassword("Repeat passphrase: ")
+		if err != nil {
+			utils.Fatalf("Failed to read passphrase confirmation: %v", err)
+		}
+		if passphrase != confirm {
+			utils.Fatalf("Passphrases do not match")
+		}
+	}
+
+	return passphrase
 }

@@ -18,8 +18,12 @@ func init() {
 
 	// Initialize the CLI app
 	app.Commands = []cli.Command{
-		core.OrdinaryCallCmd, // 普通查询
-		core.EcoModelCallCmd, // 经济模型合约查询
+		core.OrdinaryCallCmd,       // 普通查询
+		core.EcoModelCallCmd,       // 经济模型合约查询
+		core.OrdinaryTxCmd,         // 普通转账交易（无）
+		core.SendTransactionCmd,    // 代理签名交易
+		core.SendRawTransactionCmd, // 私钥签名交易
+		core.GetTxReceiptCmd,       // 获取交易回执
 		core.TestCmd,
 	}
 	sort.Sort(cli.CommandsByName(app.Commands))

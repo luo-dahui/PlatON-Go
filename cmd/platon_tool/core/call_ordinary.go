@@ -1,5 +1,5 @@
 /*
-普通rpc接口查詢
+普通rpc查詢接口
 */
 
 package core
@@ -7,19 +7,20 @@ package core
 import (
 	"encoding/json"
 	"fmt"
+	"math/big"
+	"strings"
+
 	"github.com/PlatONnetwork/PlatON-Go/common"
 	"github.com/PlatONnetwork/PlatON-Go/common/hexutil"
 	"github.com/PlatONnetwork/PlatON-Go/params"
 	"github.com/PlatONnetwork/PlatON-Go/rpc"
 	"gopkg.in/urfave/cli.v1"
-	"math/big"
-	"strings"
 )
 
 var (
 	OrdinaryCallCmd = cli.Command{
 		Name:   "call_ordinary",
-		Usage:  "普通rpc接口查詢",
+		Usage:  "普通rpc查詢接口",
 		Action: call_ordinary,
 		Flags:  OrdinaryCallCmdFlags,
 	}

@@ -83,9 +83,9 @@ func DeployContract(abiFilePath string, codeFilePath string) error {
 	}
 
 	deployParams := DeployParams{
-		From:     config.From,
-		GasPrice: config.GasPrice,
-		Gas:      config.Gas,
+		From:     config.Tx.From,
+		GasPrice: config.Tx.GasPrice,
+		Gas:      config.Tx.Gas,
 		Data:     hexutil.Encode(paramBytes),
 	}
 
@@ -203,10 +203,10 @@ func InvokeContract(contractAddr string, abiPath string, funcParams string, txTy
 	}
 
 	txParams := TxParams{
-		From:     config.From,
+		From:     config.Tx.From,
 		To:       contractAddr,
-		GasPrice: config.GasPrice,
-		Gas:      config.Gas,
+		GasPrice: config.Tx.GasPrice,
+		Gas:      config.Tx.Gas,
 		Data:     hexutil.Encode(paramBytes),
 	}
 

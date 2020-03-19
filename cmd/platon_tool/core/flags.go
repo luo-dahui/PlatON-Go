@@ -17,6 +17,11 @@ var (
 		Name:  "config",
 		Usage: "config path",
 	}
+	WalletFilePathFlag = cli.StringFlag{
+		Name:  "wallet",
+		Value: "",
+		Usage: "wallet file path",
+	}
 	PKFilePathFlag = cli.StringFlag{
 		Name:  "pkfile",
 		Value: "",
@@ -77,7 +82,7 @@ var (
 	}
 	TransferValueFlag = cli.StringFlag{
 		Name:  "value",
-		Value: "0xDE0B6B3A7640000", //one
+		Value: "0xDE0B6B3A7640000", //1LAT
 		Usage: "transfer value",
 	}
 
@@ -100,6 +105,15 @@ var (
 		ActionFlag,
 		AddressFlag, // 查询余额等
 		TxHashFlag,  // 交易hash
+	}
+
+	// 普通交易
+	OrdinaryTxCmdFlags = []cli.Flag{
+		ConfigPathFlag,
+		ActionFlag,
+		TxFromFlag,
+		TxToFlag,
+		TransferValueFlag,
 	}
 
 	// 经济模型查询相关
@@ -155,6 +169,7 @@ var (
 	}
 	sendRawTransactionCmdFlags = []cli.Flag{
 		PKFilePathFlag,
+		WalletFilePathFlag,
 		TxFromFlag,
 		TxToFlag,
 		TransferValueFlag,

@@ -19,49 +19,15 @@ import (
 )
 
 var (
-	EcoModelCallCmd = cli.Command{
-		Name:   "call_ecomodel",
+	EcoModelTxCmd = cli.Command{
+		Name:   "tx_ecomodel",
 		Usage:  "经济模型rpc接口查詢",
-		Action: call_ecomodel,
+		Action: tx_ecomodel,
 		Flags:  EcoModelCallCmdFlags,
 	}
 )
 
-// 合约名称--->合约地址
-var mapNameToAddress = map[string]string{
-	"staking":     "0x1000000000000000000000000000000000000002",
-	"gov":         "0x1000000000000000000000000000000000000005",
-	"slashing":    "0x1000000000000000000000000000000000000004",
-	"restricting": "0x1000000000000000000000000000000000000001",
-	"reward":      "0x1000000000000000000000000000000000000006",
-}
-
-// 接口名--->接口号
-var mapNameToFuncType = map[string]uint16{
-	"getVerifierList":         1100,
-	"getValidatorList":        1101,
-	"getCandidateList":        1102,
-	"getRelatedListByDelAddr": 1103,
-	"getCandidateInfo":        1105,
-	"getPackageReward":        1200,
-	"getStakingReward":        1201,
-	"getAvgPackTime":          1202,
-
-	"getProposal":         2100,
-	"getTallyResult":      2101,
-	"listProposal":        2102,
-	"getActiveVersion":    2103,
-	"getGovernParamValue": 2104,
-	"listGovernParam":     2106,
-
-	"ZeroProduceNodeList": 3002,
-
-	"GetRestrictingInfo": 4100,
-
-	"getDelegateReward": 5100,
-}
-
-func handleCall(rlpdata, toAddress string, v interface{}) (string, error) {
+func handleTx(rlpdata, toAddress string, v interface{}) (string, error) {
 
 	callEcomodelParams := CallEcomodelParams{
 		To:   toAddress,
@@ -90,18 +56,7 @@ func handleCall(rlpdata, toAddress string, v interface{}) (string, error) {
 	return string(res_data), nil
 }
 
-type Ret struct {
-	NodeId     discover.NodeID `json:"nodeID"`
-	Reward     string          `json:"reward"`
-	StakingNum uint64          `json:"stakingNum"`
-}
-
-type RewardResult struct {
-	Code int32 `json:"Code"`
-	Ret  []Ret `json:"Ret"`
-}
-
-func call_ecomodel(c *cli.Context) error {
+func tx_ecomodel(c *cli.Context) error {
 
 	parseConfigJson(c.String(ConfigPathFlag.Name))
 	// rpc api
@@ -196,18 +151,14 @@ func call_ecomodel(c *cli.Context) error {
 			rlp = getRlpData(mapNameToFuncType[funcName], nil, reward)
 			var res RewardResult
 			handleCall(rlp, mapNameToAddress[action], &res)
-			allBalance := new(big.Int)
 			for i := 0; i < len(res.Ret); i++ {
 				fmt.Println("===============================")
 				fmt.Printf("nodeid: %s \n", res.Ret[i].NodeId.String())
 				fmt.Printf("stakingNumber: %d \n", res.Ret[i].StakingNum)
 				bigRes, _ := hexutil.DecodeBig(res.Ret[i].Reward)
 				balance := new(big.Int).Div(bigRes, big.NewInt(1e18))
-				allBalance.Add(allBalance, balance)
-				fmt.Printf("reward: %v LAT\n", balance)
+				fmt.Printf("reward: %vLAT\n", balance)
 			}
-			fmt.Println("===============================")
-			fmt.Printf("all reward: %v LAT\n", allBalance)
 
 			return nil
 		}

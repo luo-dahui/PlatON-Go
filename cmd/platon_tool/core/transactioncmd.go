@@ -4,10 +4,12 @@ import (
 	"crypto/ecdsa"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"math/big"
 	"strconv"
 	"strings"
 
+	"github.com/PlatONnetwork/PlatON-Go/accounts/keystore"
 	"github.com/PlatONnetwork/PlatON-Go/cmd/utils"
 	"github.com/PlatONnetwork/PlatON-Go/common"
 	"github.com/PlatONnetwork/PlatON-Go/common/hexutil"
@@ -38,8 +40,12 @@ var (
 )
 
 func getTxReceiptCmd(c *cli.Context) {
-	hash := c.String(TransactionHashFlag.Name)
 	parseConfigJson(c.String(ConfigPathFlag.Name))
+	hash := c.String(TransactionHashFlag.Name)
+	if hash == "" {
+		hash = config.Call.TxHash
+	}
+
 	GetTxReceipt(hash)
 }
 
@@ -60,10 +66,20 @@ func GetTxReceipt(txHash string) (Receipt, error) {
 }
 
 func sendTransactionCmd(c *cli.Context) error {
-	from := c.String(TxFromFlag.Name)
-	to := c.String(TxToFlag.Name)
-	value := c.String(TransferValueFlag.Name)
+
 	parseConfigJson(c.String(ConfigPathFlag.Name))
+	from := c.String(TxFromFlag.Name)
+	if from == "" {
+		from = config.Tx.From
+	}
+	to := c.String(TxToFlag.Name)
+	if to == "" {
+		to = config.Tx.To
+	}
+	value := c.String(TransferValueFlag.Name)
+	if value == "" {
+		value = config.Tx.Value
+	}
 
 	hash, err := SendTransaction(from, to, value)
 	if err != nil {
@@ -75,14 +91,38 @@ func sendTransactionCmd(c *cli.Context) error {
 }
 
 func sendRawTransactionCmd(c *cli.Context) error {
-	from := c.String(TxFromFlag.Name)
-	to := c.String(TxToFlag.Name)
-	value := c.String(TransferValueFlag.Name)
-	pkFile := c.String(PKFilePathFlag.Name)
 
 	parseConfigJson(c.String(ConfigPathFlag.Name))
+	walletFile := c.String(WalletFilePathFlag.Name)
+	if walletFile == "" {
+		walletFile = config.Tx.Wallet
+	}
 
-	hash, err := SendRawTransaction(from, to, value, pkFile)
+	keyjson, err := ioutil.ReadFile(walletFile)
+	if err != nil {
+		utils.Fatalf("Failed to read the wallet file at '%s': %v", walletFile, err)
+	}
+
+	// Decrypt key with passphrase.
+	passphrase := promptPassphrase(false)
+	key, err := keystore.DecryptKey(keyjson, passphrase)
+	if err != nil {
+		utils.Fatalf("the wallet password is error: %v", err)
+	}
+
+	// privateKey := hex.EncodeToString(crypto.FromECDSA(key.PrivateKey))
+	from := key.Address.Hex()
+
+	to := c.String(TxToFlag.Name)
+	if to == "" {
+		to = config.Tx.To
+	}
+	value := c.String(TransferValueFlag.Name)
+	if value == "" {
+		value = config.Tx.Value
+	}
+
+	hash, err := SendRawTransaction(from, to, value, key.PrivateKey)
 	if err != nil {
 		utils.Fatalf("Send transaction error: %v", err)
 	}
@@ -91,15 +131,16 @@ func sendRawTransactionCmd(c *cli.Context) error {
 	return nil
 }
 
+// 此种方式需要将钱包放到节点的keystore目录下（不安全）
 func SendTransaction(from, to, value string) (string, error) {
 	var tx TxParams
 	if from == "" {
-		from = config.From
+		from = config.Tx.From
 	}
 	tx.From = from
 	tx.To = to
-	tx.Gas = config.Gas
-	tx.GasPrice = config.GasPrice
+	tx.Gas = config.Tx.Gas
+	tx.GasPrice = config.Tx.GasPrice
 
 	if !strings.HasPrefix(value, "0x") {
 		intValue, err := strconv.ParseInt(value, 10, 64)
@@ -110,19 +151,22 @@ func SendTransaction(from, to, value string) (string, error) {
 	}
 	tx.Value = value
 
-	params := make([]TxParams, 1)
+	// 输入钱包密码
+	passphrase := promptPassphrase(false)
+	//password := "88888888"
+	// params := make([]TxParams, 2)
+	params := make([]interface{}, 2)
 	params[0] = tx
+	params[1] = passphrase
 
-	res, _ := Send(params, "platon_sendTransaction")
+	res, _ := Send(params, "personal_sendTransaction")
 	response := parseResponse(res)
 
 	return response.Result, nil
 }
 
-func SendRawTransaction(from, to, value string, pkFilePath string) (string, error) {
-	if len(accountPool) == 0 {
-		parsePkFile(pkFilePath)
-	}
+func SendRawTransaction(from, to, value string, priv *ecdsa.PrivateKey) (string, error) {
+
 	var v int64
 	var err error
 	if strings.HasPrefix(value, "0x") {
@@ -135,39 +179,10 @@ func SendRawTransaction(from, to, value string, pkFilePath string) (string, erro
 		}
 	}
 
-	////
-	//
-	//for k, v := range accountPool {
-	//	fmt.Println("acc", k.Hex())
-	//	fmt.Println("value", fmt.Sprintf("%+v", v))
-	//}
-
-	acc, ok := accountPool[common.HexToAddress(from)]
-	if !ok {
-		return "", fmt.Errorf("private key not found in private key file,addr:%s", from)
-	}
 	nonce := getNonce(from)
-	nonce++
+	//nonce++
 
-	//// getBalance
-	//
-	//unlock := JsonParam{
-	//	Jsonrpc: "2.0",
-	//	Method:  "personal_unlockAccount",
-	//	// {"method": "platon_getBalance", "params": [account, pwd, expire]}
-	//	// {"jsonrpc":"2.0", "method":"eth_getBalance","params":["0xde1e758511a7c67e7db93d1c23c1060a21db4615","latest"],"id":67}
-	//	Params: []interface{}{from, "latest"},
-	//	Id:     1,
-	//}
-	//
-	//// unlock
-	//s, e := HttpPost(unlock)
-	//if nil != e {
-	//	fmt.Println("the gat balance err:", e)
-	//}
-	//fmt.Println("the balance:", s)
-
-	newTx := getSignedTransaction(from, to, v, acc.Priv, nonce)
+	newTx := getSignedTransaction(from, to, v, priv, nonce)
 
 	hash, err := sendRawTransaction(newTx)
 	if err != nil {
@@ -187,10 +202,15 @@ func sendRawTransaction(transaction *types.Transaction) (string, error) {
 	return response.Result, nil
 }
 
-func getSignedTransaction(from, to string, value int64, priv *ecdsa.PrivateKey, nonce uint64) *types.Transaction {
-	gas, _ := strconv.Atoi(config.Gas)
-	gasPrice, _ := new(big.Int).SetString(config.GasPrice, 10)
-	newTx, err := types.SignTx(types.NewTransaction(nonce, common.HexToAddress(to), big.NewInt(value), uint64(gas), gasPrice, []byte{}), types.NewEIP155Signer(new(big.Int).SetInt64(100)), priv)
+func getSignedTransaction(from, to string, value int64, priv *ecdsa.PrivateKey,
+	nonce uint64) *types.Transaction {
+
+	gas, _ := strconv.Atoi(config.Tx.Gas)
+	gasPrice, _ := new(big.Int).SetString(config.Tx.GasPrice, 10)
+	newTx, err := types.SignTx(types.NewTransaction(nonce, common.HexToAddress(to),
+		big.NewInt(value), uint64(gas), gasPrice, []byte{}),
+		types.NewEIP155Signer(config.ChainID), priv)
+
 	if err != nil {
 		panic(fmt.Errorf("sign error,%s", err.Error()))
 	}
@@ -201,6 +221,7 @@ func getNonce(addr string) uint64 {
 	res, _ := Send([]string{addr, "latest"}, "platon_getTransactionCount")
 	response := parseResponse(res)
 	nonce, _ := hexutil.DecodeBig(response.Result)
-	fmt.Println(addr, nonce)
+	//fmt.Println(addr, nonce)
+	fmt.Printf("address:%v, nonce:%v \n", addr, nonce)
 	return nonce.Uint64()
 }
