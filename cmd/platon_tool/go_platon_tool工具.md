@@ -87,6 +87,14 @@ D:\core\PlatonGo\src\github.com\PlatONnetwork\PlatON-Go\crypto\bls\bls_win\lib
 
 ## 交易相关命令
 
+主要有两种签名交易的方式：
+
+- **本地钱包文件签名方式(钱包文件放到本地进行解锁)**
+
+- **服务器代理签名方式(钱包文件放到节点上)**
+
+  
+
 ### 普通交易(Tx_Ordinary)
 
 - 代理签名方式
@@ -128,9 +136,31 @@ D:\core\PlatonGo\src\github.com\PlatONnetwork\PlatON-Go\crypto\bls\bls_win\lib
 
 [接口说明文档](http://192.168.9.66/Juzix-Platon-Doc/Dark/blob/develop/03-%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/01-%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/PlatON%E5%BA%95%E5%B1%82/PlatON%E5%86%85%E7%BD%AE%E5%90%88%E7%BA%A6%E5%8F%8ARPC%E6%8E%A5%E5%8F%A3%E8%AF%B4%E6%98%8E.md#withdrawDelegateReward )
 
+- **使用本地钱包文件签名方式**
+
 #### 质押
 
 合约地址：0x1000000000000000000000000000000000000002
+
+- 发起质押 (funcType:1000)
+
+```shell
+./platon_tool.exe tx_ecomodel --action staking --funcName createStaking --config D://config.json 
+```
+
+- 修改质押信息 (funcType:1001)
+
+```shell
+./platon_tool.exe tx_ecomodel --action staking --funcName editCandidate --config D://config.json 
+```
+
+- 增持质押 (funcType:1002)
+
+```shell
+./platon_tool.exe tx_ecomodel --action staking --funcName increaseStaking --nodeId "" --amountType 0 --amount 100000000000000000 --config D://config.json 
+```
+
+
 
 #### 治理
 

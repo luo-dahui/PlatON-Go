@@ -13,6 +13,16 @@ var (
 		Usage: "economic model function name",
 	}
 
+	AmountTypeFlag = cli.StringFlag{
+		Name:  "amountType",
+		Usage: "Amount Type(0:Amount of free,1:Restricting Amount)",
+	}
+
+	AmountFlag = cli.StringFlag{
+		Name:  "amount",
+		Usage: "Amount(unit:Von)",
+	}
+
 	ConfigPathFlag = cli.StringFlag{
 		Name:  "config",
 		Usage: "config path",
@@ -139,6 +149,20 @@ var (
 	EcoModelCallCmdFlags = []cli.Flag{
 		ActionFlag,
 		FuncNameFlag,
+		AddressFlag,
+		NodeIdFlag,
+		ProposalIDFlag,
+		ModuleFlag,
+		NameFlag,
+		ConfigPathFlag,
+	}
+
+	EcoModelTxCmdFlags = []cli.Flag{
+		ActionFlag,
+		FuncNameFlag,
+		AmountTypeFlag,
+		AmountFlag,
+		WalletFilePathFlag,
 		AddressFlag,
 		NodeIdFlag,
 		ProposalIDFlag,

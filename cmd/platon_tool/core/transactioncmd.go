@@ -75,6 +75,7 @@ var listAddress = []string{
 	"0x1000000000000000000000000000000000000006",
 }
 
+// 是否是经济模型合约地址
 func IsEcoModuleAddress(to string) bool {
 	for _, eachItem := range listAddress {
 		if eachItem == to {

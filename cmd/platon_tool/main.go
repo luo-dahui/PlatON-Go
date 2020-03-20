@@ -23,7 +23,8 @@ func init() {
 		core.OrdinaryTxCmd,         // 普通转账交易（无）
 		core.SendTransactionCmd,    // 代理签名交易
 		core.SendRawTransactionCmd, // 私钥签名交易
-		core.GetTxReceiptCmd,       // 获取交易回执
+		core.GetTxReceiptCmd,       // 获取交易回执(包括普通交易和经济模型交易)
+		core.EcoModelTxCmd,         // 经济模型合约交易
 		core.TestCmd,
 	}
 	sort.Sort(cli.CommandsByName(app.Commands))

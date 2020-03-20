@@ -58,6 +58,8 @@ type CallEcomodelParams struct {
 
 type Staking struct {
 	NodeId          discover.NodeID `json:"nodeid"`
+	AmountType      uint16          `json:"amountType"`
+	Amount          *big.Int        `json:"amount"`
 	DelegateAddress common.Address  `json:"delegateAddress"`
 }
 

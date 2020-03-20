@@ -9,11 +9,13 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"math/big"
+	"strconv"
 	"strings"
 
-	"github.com/PlatONnetwork/PlatON-Go/common"
-	"github.com/PlatONnetwork/PlatON-Go/common/hexutil"
+	"github.com/PlatONnetwork/PlatON-Go/accounts/keystore"
+	"github.com/PlatONnetwork/PlatON-Go/cmd/utils"
 	"github.com/PlatONnetwork/PlatON-Go/p2p/discover"
 	"gopkg.in/urfave/cli.v1"
 )
@@ -23,7 +25,7 @@ var (
 		Name:   "tx_ecomodel",
 		Usage:  "经济模型rpc接口查詢",
 		Action: tx_ecomodel,
-		Flags:  EcoModelCallCmdFlags,
+		Flags:  EcoModelTxCmdFlags,
 	}
 )
 
@@ -56,9 +58,46 @@ func handleTx(rlpdata, toAddress string, v interface{}) (string, error) {
 	return string(res_data), nil
 }
 
-func tx_ecomodel(c *cli.Context) error {
+func getBigValueByString(value string) *big.Int {
+	var ok bool
+	var bigValue *big.Int
+	if len(value) > 2 && value[0:2] == "0x" {
+		bigValue, ok = new(big.Int).SetString(value[2:], 16)
+		if ok == false || config.Staking.Amount == nil {
+			panic(fmt.Errorf("Amount is error"))
+		}
+	} else {
+		bigValue, _ = new(big.Int).SetString(value, 10)
+	}
 
+	return bigValue
+}
+
+func tx_ecomodel(c *cli.Context) error {
 	parseConfigJson(c.String(ConfigPathFlag.Name))
+
+	// 加载钱包文件
+	walletFile := c.String(WalletFilePathFlag.Name)
+	if walletFile == "" {
+		walletFile = config.Tx.Wallet
+	}
+
+	keyjson, err := ioutil.ReadFile(walletFile)
+	if err != nil {
+		utils.Fatalf("Failed to read the wallet file at '%s': %v", walletFile, err)
+	}
+
+	// Decrypt key with passphrase.
+	passphrase := promptPassphrase(false)
+	key, err := keystore.DecryptKey(keyjson, passphrase)
+	if err != nil {
+		utils.Fatalf("the wallet password is error: %v", err)
+	}
+
+	// privateKey := hex.EncodeToString(crypto.FromECDSA(key.PrivateKey))
+	from := key.Address.Hex()
+	fmt.Println(from)
+
 	// rpc api
 	action := c.String("action")
 	action = strings.ToLower(action)
@@ -66,101 +105,25 @@ func tx_ecomodel(c *cli.Context) error {
 	funcName := c.String("funcName")
 	var rlp string
 	switch mapNameToFuncType[funcName] {
-	case 1100, 1101, 1102, 1200, 1201, 1202, 2102, 2103, 3002:
-		rlp = getRlpData(mapNameToFuncType[funcName], nil, nil)
-	case 1103:
-		{
-			delAddress := c.String("address")
-			if delAddress == "" {
-				delAddress = config.Staking.DelegateAddress.Hex()
-			}
-			rlp = getRlpData(mapNameToFuncType[funcName], nil, delAddress)
-		}
-	case 1105:
+	case 1002:
 		{
 			nodeId := c.String("nodeId")
-			if nodeId == "" {
-				nodeId = config.Staking.NodeId.String()
-			}
-			rlp = getRlpData(mapNameToFuncType[funcName], nil, nodeId)
-		}
-	case 2100, 2101:
-		{
-			proposalID := c.String("proposalID")
-			if proposalID == "" {
-				proposalID = config.Gov.ProposalID.String()
-			}
-			rlp = getRlpData(mapNameToFuncType[funcName], nil, proposalID)
-		}
-	case 2104:
-		{
-			module := c.String("module")
-			if module == "" {
-				module = config.Gov.Module
-			}
-			module = strings.ToLower(module)
-
-			name := c.String("name")
-			if name == "" {
-				name = config.Gov.Name
+			if nodeId != "" {
+				config.Staking.NodeId, _ = discover.HexID(nodeId)
 			}
 
-			var gov Gov
-			gov.Module = module
-			gov.Name = name
-
-			rlp = getRlpData(mapNameToFuncType[funcName], nil, gov)
-		}
-	case 2106:
-		{
-			module := c.String("module")
-			if module == "" {
-				module = config.Gov.Module
-			}
-			module = strings.ToLower(module)
-			rlp = getRlpData(mapNameToFuncType[funcName], nil, module)
-		}
-	case 4100:
-		{
-			// 锁仓金额释放到账账户
-			account := c.String("address")
-			if account == "" {
-				account = config.Restricting.Account.Hex()
-			}
-			rlp = getRlpData(mapNameToFuncType[funcName], nil, account)
-		}
-	case 5100:
-		{
-			// 查询账户在各节点未提取委托奖励
-			var reward Reward
-			account := c.String("address")
-			if account == "" {
-				account = config.Reward.Account.Hex()
-			}
-			reward.Account = common.HexToAddress(account)
-
-			// nodeid
-			nodeid := c.String("nodeId")
-			if nodeid == "" {
-				reward.NodeIds = config.Reward.NodeIds
-			} else {
-				node := discover.MustHexID(nodeid)
-				reward.NodeIds = append(reward.NodeIds, node)
+			amountType := c.String("amountType")
+			if amountType != "" {
+				typ, _ := strconv.Atoi(amountType)
+				config.Staking.AmountType = uint16(typ)
 			}
 
-			rlp = getRlpData(mapNameToFuncType[funcName], nil, reward)
-			var res RewardResult
-			handleCall(rlp, mapNameToAddress[action], &res)
-			for i := 0; i < len(res.Ret); i++ {
-				fmt.Println("===============================")
-				fmt.Printf("nodeid: %s \n", res.Ret[i].NodeId.String())
-				fmt.Printf("stakingNumber: %d \n", res.Ret[i].StakingNum)
-				bigRes, _ := hexutil.DecodeBig(res.Ret[i].Reward)
-				balance := new(big.Int).Div(bigRes, big.NewInt(1e18))
-				fmt.Printf("reward: %vLAT\n", balance)
+			amount := c.String("amount")
+			if amount != "" {
+				config.Staking.Amount = getBigValueByString(amount)
 			}
 
-			return nil
+			rlp = getRlpData(mapNameToFuncType[funcName], nil, config.Staking)
 		}
 	default:
 		{
@@ -169,7 +132,7 @@ func tx_ecomodel(c *cli.Context) error {
 		}
 	}
 
-	result, _ := handleCall(rlp, mapNameToAddress[action], nil)
+	result, _ := handleTx(rlp, mapNameToAddress[action], nil)
 	fmt.Printf("result:\n %s \n", result)
 
 	return nil

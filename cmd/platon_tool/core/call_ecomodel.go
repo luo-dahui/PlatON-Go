@@ -38,6 +38,7 @@ var mapNameToAddress = map[string]string{
 
 // 接口名--->接口号
 var mapNameToFuncType = map[string]uint16{
+	// 查询
 	"getVerifierList":         1100,
 	"getValidatorList":        1101,
 	"getCandidateList":        1102,
@@ -55,10 +56,11 @@ var mapNameToFuncType = map[string]uint16{
 	"listGovernParam":     2106,
 
 	"ZeroProduceNodeList": 3002,
+	"GetRestrictingInfo":  4100,
+	"getDelegateReward":   5100,
 
-	"GetRestrictingInfo": 4100,
-
-	"getDelegateReward": 5100,
+	// 交易
+	"increaseStaking": 1002,
 }
 
 func handleCall(rlpdata, toAddress string, v interface{}) (string, error) {

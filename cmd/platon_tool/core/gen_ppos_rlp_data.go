@@ -285,9 +285,10 @@ func getRlpData(funcType uint16, cfg *decDataConfig, selParams interface{}) stri
 		}
 	case 1002:
 		{
-			nodeId, _ := rlp.EncodeToBytes(cfg.P1002.NodeId)
-			typ, _ := rlp.EncodeToBytes(cfg.P1002.Typ)
-			amount, _ := rlp.EncodeToBytes(cfg.P1002.Amount)
+			staking := selParams.(Staking)
+			nodeId, _ := rlp.EncodeToBytes(staking.NodeId)
+			typ, _ := rlp.EncodeToBytes(staking.AmountType)
+			amount, _ := rlp.EncodeToBytes(staking.Amount)
 
 			params = append(params, nodeId)
 			params = append(params, typ)
