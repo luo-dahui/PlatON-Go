@@ -294,11 +294,6 @@ func getRlpData(funcType uint16, cfg *decDataConfig, selParams interface{}) stri
 			params = append(params, typ)
 			params = append(params, amount)
 		}
-	case 1003:
-		{
-			nodeId, _ := rlp.EncodeToBytes(cfg.P1003.NodeId)
-			params = append(params, nodeId)
-		}
 	case 1004:
 		{
 			typ, _ := rlp.EncodeToBytes(cfg.P1004.Typ)
@@ -344,7 +339,7 @@ func getRlpData(funcType uint16, cfg *decDataConfig, selParams interface{}) stri
 			params = append(params, delAddr)
 			params = append(params, nodeId)
 		}
-	case 1105:
+	case 1105, 1003:
 		{
 			// 节点id
 			nodeId, _ := discover.HexID(selParams.(string))
@@ -522,6 +517,7 @@ func getRlpData(funcType uint16, cfg *decDataConfig, selParams interface{}) stri
 	} else {
 		rlpData = hexutil.Encode(buf.Bytes())
 		fmt.Printf("funcType:%d rlp_data = %s\n", funcType, rlpData)
+		fmt.Println("==================================")
 	}
 
 	return rlpData

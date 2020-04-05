@@ -61,6 +61,7 @@ var mapNameToFuncType = map[string]uint16{
 
 	// 交易
 	"increaseStaking": 1002,
+	"withdrewStaking": 1003,
 }
 
 func handleCall(rlpdata, toAddress string, v interface{}) (string, error) {

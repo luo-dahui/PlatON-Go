@@ -89,9 +89,9 @@ D:\core\PlatonGo\src\github.com\PlatONnetwork\PlatON-Go\crypto\bls\bls_win\lib
 
 主要有两种签名交易的方式：
 
-- **本地钱包文件签名方式(钱包文件放到本地进行解锁)**
+- **本地钱包文件签名方式：钱包文件放到本地进行解锁**
 
-- **服务器代理签名方式(钱包文件放到节点上)**
+- **服务器代理签名方式：钱包文件放到节点上**
 
   
 
@@ -130,9 +130,7 @@ D:\core\PlatonGo\src\github.com\PlatONnetwork\PlatON-Go\crypto\bls\bls_win\lib
 
 --------------
 
-
-
-### 经济模型合约(Tx_EcoModel)
+### 经济模型交易(Tx_EcoModel)
 
 [接口说明文档](http://192.168.9.66/Juzix-Platon-Doc/Dark/blob/develop/03-%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/01-%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/PlatON%E5%BA%95%E5%B1%82/PlatON%E5%86%85%E7%BD%AE%E5%90%88%E7%BA%A6%E5%8F%8ARPC%E6%8E%A5%E5%8F%A3%E8%AF%B4%E6%98%8E.md#withdrawDelegateReward )
 
@@ -160,6 +158,24 @@ D:\core\PlatonGo\src\github.com\PlatONnetwork\PlatON-Go\crypto\bls\bls_win\lib
 ./platon_tool.exe tx_ecomodel --action staking --funcName increaseStaking --nodeId "" --amountType 0 --amount 100000000000000000 --config D://config.json 
 ```
 
+> 参数说明：
+>
+> - `--nodeId`为质押节点Id，不输入时，从config.json配置文件里面的staking.nodeId参数中读取。
+> - `--amount`为增持质押金额，不输入时，从config.json配置文件里面的staking.Amount参数中读取。
+> - `--amountType`为增持质押金额类型，不输入时，从config.json配置文件里面的staking.AmountType参数中读取。
+
+- 撤销质押(一次性发起全部撤销，多次到账) (funcType:1003)
+
+```shell
+./platon_tool tx_ecomodel --action staking --funcName withdrewStaking --nodeId "" --config D://config.json 
+```
+
+> 参数说明：
+>
+> - `--nodeId`为质押节点Id，不输入时，从config.json配置文件里面的staking.nodeId参数中读取。
+
+
+
 
 
 #### 治理
@@ -177,8 +193,6 @@ D:\core\PlatonGo\src\github.com\PlatONnetwork\PlatON-Go\crypto\bls\bls_win\lib
 #### 奖励
 
 合约地址： 0x1000000000000000000000000000000000000006
-
-### 
 
 ---------
 
@@ -232,6 +246,14 @@ test --config E://code//PlatON//src//github.com//PlatONnetwork//PlatON-Go//cmd//
 
 通过rpc接口直接查询，工具不提供此类查询，意义不大。
 
+- 获取交易回执
+
+```shell
+./platon_tool.exe getTxReceipt --hash "0x8403252dadc7abc1bf73b859566a304bb55bc6eac7f69d537bc64a9cf7a37b03" --config D://config.json
+```
+
+> - `--hash` 为交易hash，不输入时，从config.json配置文件里面的call.txhash参数中读取
+
 
 
 ---
@@ -267,7 +289,7 @@ test --config E://code//PlatON//src//github.com//PlatONnetwork//PlatON-Go//cmd//
 - 查询当前账户地址所委托的节点的NodeID和质押Id(funcType:1103)
 
 ```shell
-./platon_tool.exe call_ecomodel --action staking --funcName getRelatedListByDelAddr --address "0x914d53aad47dbe7d0186a608ef5c3538306a6f22" --config D://config.json
+./platon_tool call_ecomodel --action staking --funcName getRelatedListByDelAddr --address "0x914d53aad47dbe7d0186a608ef5c3538306a6f22" --config D://config.json
 ```
 
 > `--address`为委托地址，不输入时，从config.json配置文件里面的staking.delegateAddress参数中读取。

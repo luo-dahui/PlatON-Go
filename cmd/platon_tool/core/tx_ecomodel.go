@@ -6,13 +6,13 @@ platon_call
 package core
 
 import (
-	"encoding/hex"
-	"encoding/json"
+	"crypto/ecdsa"
 	"fmt"
 	"io/ioutil"
 	"math/big"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/PlatONnetwork/PlatON-Go/accounts/keystore"
 	"github.com/PlatONnetwork/PlatON-Go/cmd/utils"
@@ -29,33 +29,41 @@ var (
 	}
 )
 
-func handleTx(rlpdata, toAddress string, v interface{}) (string, error) {
+// 发送经济模型交易
+func sendEcModelTx(fromAddress, toAddress, rlpdata, value string, priv *ecdsa.PrivateKey) (string, error) {
 
-	callEcomodelParams := CallEcomodelParams{
-		To:   toAddress,
-		Data: rlpdata,
-	}
-
-	callParams := make([]interface{}, 2)
-	callParams[0] = callEcomodelParams
-	callParams[1] = "latest"
-
-	r, err := Send(callParams, "platon_call")
+	// 发送交易
+	hash, err := SendRawTransaction(fromAddress, toAddress, rlpdata, value, priv)
 	if err != nil {
-		return "", fmt.Errorf("send http post to invokeContract contract error")
+		utils.Fatalf("Send transaction error: %v", err)
 	}
-	resp := parseResponse(r)
 
-	if len(resp.Result) > 1 {
-		if resp.Result[0:2] == "0x" || resp.Result[0:2] == "0X" {
-			resp.Result = resp.Result[2:]
+	fmt.Printf("tx hash: %s \n", hash)
+	fmt.Println("==========get Transaction Receipt, please wait=============")
+
+	// Get transaction receipt according to result
+	ch := make(chan string, 1)
+	exit := make(chan string, 1)
+	go GetTxReceipt(hash, ch, exit, true)
+
+	/*
+	  Loop call to get transactionReceipt... until 200s timeout
+	*/
+	select {
+	case retCode := <-ch:
+		fmt.Printf("retCode: %s\n", retCode)
+		if retCode == "0" {
+			fmt.Println("transaction succeed.\n")
+		} else {
+			fmt.Println("transaction failed.\n")
+			GetMsgByErrCode(retCode)
 		}
+	case <-time.After(time.Second * 200):
+		exit <- "exit"
+		fmt.Printf("get transaction receipt timeout...more than 200 second.\n")
 	}
-	res_data, _ := hex.DecodeString(resp.Result)
 
-	json.Unmarshal(res_data, v)
-
-	return string(res_data), nil
+	return hash, nil
 }
 
 func getBigValueByString(value string) *big.Int {
@@ -71,6 +79,48 @@ func getBigValueByString(value string) *big.Int {
 	}
 
 	return bigValue
+}
+
+// 修改验证人信息
+func getRlpDataByInEditCandidate(c *cli.Context, funcType uint16) string {
+	nodeId := c.String("nodeId")
+	if nodeId != "" {
+		config.Staking.NodeId, _ = discover.HexID(nodeId)
+	}
+
+	amountType := c.String("amountType")
+	if amountType != "" {
+		typ, _ := strconv.Atoi(amountType)
+		config.Staking.AmountType = uint16(typ)
+	}
+
+	amount := c.String("amount")
+	if amount != "" {
+		config.Staking.Amount = getBigValueByString(amount)
+	}
+
+	return getRlpData(funcType, nil, config.Staking)
+}
+
+// 增持质押
+func getRlpDataByInCreaseStaking(c *cli.Context, funcType uint16) string {
+	nodeId := c.String("nodeId")
+	if nodeId != "" {
+		config.Staking.NodeId, _ = discover.HexID(nodeId)
+	}
+
+	amountType := c.String("amountType")
+	if amountType != "" {
+		typ, _ := strconv.Atoi(amountType)
+		config.Staking.AmountType = uint16(typ)
+	}
+
+	amount := c.String("amount")
+	if amount != "" {
+		config.Staking.Amount = getBigValueByString(amount)
+	}
+
+	return getRlpData(funcType, nil, config.Staking)
 }
 
 func tx_ecomodel(c *cli.Context) error {
@@ -96,34 +146,30 @@ func tx_ecomodel(c *cli.Context) error {
 
 	// privateKey := hex.EncodeToString(crypto.FromECDSA(key.PrivateKey))
 	from := key.Address.Hex()
-	fmt.Println(from)
+	//fmt.Println(from)
 
 	// rpc api
 	action := c.String("action")
 	action = strings.ToLower(action)
 
 	funcName := c.String("funcName")
-	var rlp string
+	var rlpData string
 	switch mapNameToFuncType[funcName] {
+	case 1001:
+		{
+			rlpData = getRlpDataByInEditCandidate(c, mapNameToFuncType[funcName])
+		}
 	case 1002:
 		{
+			rlpData = getRlpDataByInCreaseStaking(c, mapNameToFuncType[funcName])
+		}
+	case 1003:
+		{
 			nodeId := c.String("nodeId")
-			if nodeId != "" {
-				config.Staking.NodeId, _ = discover.HexID(nodeId)
+			if nodeId == "" {
+				nodeId = config.Staking.NodeId.String()
 			}
-
-			amountType := c.String("amountType")
-			if amountType != "" {
-				typ, _ := strconv.Atoi(amountType)
-				config.Staking.AmountType = uint16(typ)
-			}
-
-			amount := c.String("amount")
-			if amount != "" {
-				config.Staking.Amount = getBigValueByString(amount)
-			}
-
-			rlp = getRlpData(mapNameToFuncType[funcName], nil, config.Staking)
+			rlpData = getRlpData(mapNameToFuncType[funcName], nil, nodeId)
 		}
 	default:
 		{
@@ -132,8 +178,8 @@ func tx_ecomodel(c *cli.Context) error {
 		}
 	}
 
-	result, _ := handleTx(rlp, mapNameToAddress[action], nil)
-	fmt.Printf("result:\n %s \n", result)
+	// 发送交易
+	sendEcModelTx(from, mapNameToAddress[action], rlpData, "", key.PrivateKey)
 
 	return nil
 }

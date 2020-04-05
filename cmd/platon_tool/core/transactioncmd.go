@@ -1,13 +1,12 @@
 package core
 
 import (
-	"bytes"
 	"crypto/ecdsa"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"math/big"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -49,14 +48,15 @@ func getTxReceiptCmd(c *cli.Context) {
 		hash = config.Call.TxHash
 	}
 
-	receipt, reCode, _ := GetTxReceipt(hash, nil, nil, false)
+	receipt, retCode, _ := GetTxReceipt(hash, nil, nil, false)
 
-	fmt.Printf("reCode:%s\n", reCode)
-	if reCode == "0" {
+	fmt.Printf("retCode:%s\n", retCode)
+	if retCode == "0" {
 		fmt.Println("经济模型交易成功.")
-	} else if reCode == "00" {
+	} else if retCode == "00" {
 		fmt.Println("普通转账交易成功.")
 	} else {
+		GetMsgByErrCode(retCode)
 		fmt.Println("交易失败.")
 	}
 
@@ -102,12 +102,15 @@ func GetTxReceipt(txHash string, ch chan string, exit chan string, wait bool) (R
 			if IsEcoModuleAddress(receipt.Result.To) == true {
 				logs := receipt.Result.Logs
 				if len(logs) != 0 {
-					var args [][]byte
-					if err := rlp.Decode(bytes.NewReader(logs[0].Data), &args); nil != err {
-						fmt.Fprintln(os.Stderr, err)
-						os.Exit(1)
-					}
-					retCode = string(args[0])
+					/*
+						var args [][]byte
+						if err := rlp.Decode(bytes.NewReader(logs[0].Data), &args); nil != err {
+							fmt.Fprintln(os.Stderr, err)
+							os.Exit(1)
+						}
+						retCode = string(args[0])*/
+
+					retCode = hex.EncodeToString(logs[0].Data)
 				} else {
 					// 经济模型交易失败
 					retCode = "1"
@@ -224,7 +227,7 @@ func sendRawTransactionCmd(c *cli.Context) error {
 	}
 
 	// 发送交易
-	hash, err := SendRawTransaction(from, to, value, key.PrivateKey)
+	hash, err := SendRawTransaction(from, to, "", value, key.PrivateKey)
 	if err != nil {
 		utils.Fatalf("Send transaction error: %v", err)
 	}
@@ -289,24 +292,26 @@ func SendTransaction(from, to, value string) (string, error) {
 	return response.Result, nil
 }
 
-func SendRawTransaction(from, to, value string, priv *ecdsa.PrivateKey) (string, error) {
+func SendRawTransaction(from, to, data, value string, priv *ecdsa.PrivateKey) (string, error) {
 
 	var v int64
 	var err error
 	if strings.HasPrefix(value, "0x") {
 		bigValue, _ := hexutil.DecodeBig(value)
 		v = bigValue.Int64()
-	} else {
+	} else if value != "" {
 		v, err = strconv.ParseInt(value, 10, 64)
 		if err != nil {
 			panic(fmt.Sprintf("transfer value to int error.%s", err))
 		}
+	} else {
+		v = 0 // 经济模型交易
 	}
 
 	nonce := getNonce(from)
 	//nonce++
 
-	newTx := getSignedTransaction(from, to, v, priv, nonce)
+	newTx := getSignedTransaction(from, to, data, v, priv, nonce)
 
 	hash, err := sendRawTransaction(newTx)
 	if err != nil {
@@ -326,7 +331,7 @@ func sendRawTransaction(transaction *types.Transaction) (string, error) {
 	return response.Result, nil
 }
 
-func getSignedTransaction(from, to string, value int64, priv *ecdsa.PrivateKey,
+func getSignedTransaction(from, to, data string, value int64, priv *ecdsa.PrivateKey,
 	nonce uint64) *types.Transaction {
 
 	var gas uint64
@@ -354,8 +359,12 @@ func getSignedTransaction(from, to string, value int64, priv *ecdsa.PrivateKey,
 		gasPrice = bigGasPrice
 	}
 
+	var byteData []byte
+	if data != "" {
+		byteData = hexutil.MustDecode(data)
+	}
 	newTx, err := types.SignTx(types.NewTransaction(nonce, common.HexToAddress(to),
-		big.NewInt(value), uint64(gas), gasPrice, []byte{}),
+		big.NewInt(value), uint64(gas), gasPrice, byteData),
 		types.NewEIP155Signer(config.ChainID), priv)
 
 	if err != nil {
@@ -370,5 +379,6 @@ func getNonce(addr string) uint64 {
 	nonce, _ := hexutil.DecodeBig(response.Result)
 	//fmt.Println(addr, nonce)
 	fmt.Printf("address:%v, nonce:%v \n", addr, nonce)
+	fmt.Println("==================================")
 	return nonce.Uint64()
 }

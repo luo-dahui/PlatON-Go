@@ -199,7 +199,7 @@ func getTransactionGo(acc *PriAccount, from, to string) {
 		}
 	}()
 
-	newTx := getSignedTransaction(from, to, int64(StressTransferValue), acc.Priv, acc.Nonce)
+	newTx := getSignedTransaction(from, to, "", int64(StressTransferValue), acc.Priv, acc.Nonce)
 	lock := &sync.Mutex{}
 	lock.Lock()
 
