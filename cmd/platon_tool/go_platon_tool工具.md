@@ -1,4 +1,4 @@
-go_platon_tool工具
+## go_platon_tool工具
 
 是一款go语言版的platon工具，主要用于发送platon经济模型相关的交易和查询命令
 
