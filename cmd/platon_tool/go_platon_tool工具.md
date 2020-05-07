@@ -271,7 +271,7 @@ test --config E://code//PlatON//src//github.com//PlatONnetwork//PlatON-Go//cmd//
 - 查询当前结算周期的验证人队列 (funcType:1100)
 
 ```shell
-./platon_tool.exe call_ecomodel --action staking --funcName getVerifierList --config E://code//PlatON//src//github.com//PlatONnetwork//PlatON-Go//cmd//platon_tool//config.json 
+./platon_tool call_ecomodel --action staking --funcName getVerifierList --config E://code//PlatON//src//github.com//PlatONnetwork//PlatON-Go//cmd//platon_tool//config.json 
 ```
 
 -  查询当前共识周期的验证人列表(funcType:1101)

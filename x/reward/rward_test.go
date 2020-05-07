@@ -1,14 +1,24 @@
 package reward
 
 import (
+	"encoding/hex"
+	"fmt"
 	"log"
 	"math/big"
 	"testing"
 
+	"github.com/PlatONnetwork/PlatON-Go/common"
+	"github.com/PlatONnetwork/PlatON-Go/crypto"
 	"github.com/PlatONnetwork/PlatON-Go/p2p/discover"
 	"github.com/PlatONnetwork/PlatON-Go/params"
 	"github.com/PlatONnetwork/PlatON-Go/rlp"
 )
+
+type DelegateRewardInfo struct {
+	NodeID     discover.NodeID `json:"nodeID"`
+	StakingNum uint64          `json:"stakingNum"`
+	Reward     *big.Int        `json:"reward" rlp:"nil"`
+}
 
 func TestDecreaseDelegateReward(t *testing.T) {
 	var receives []DelegateRewardReceipt
@@ -64,4 +74,12 @@ func TestSize(t *testing.T) {
 
 	log.Print("size of per", length*101/(1024*1024))
 
+}
+
+func Test3(t *testing.T) {
+	strPubKey := "063effe3e402551a3eca044b6f1da86574a8e6729016ffb900a543825475bc63de056e8c2dd8fab6bfc59a7c9b9af6193f6d633b43c8cddcc8afaa751101ab5c"
+	bytesPubKey, _ := hex.DecodeString(strPubKey)
+	address := common.BytesToAddress(crypto.Keccak256(bytesPubKey)[12:]).Hex()
+	fmt.Printf("strPubKey:%v\n", strPubKey)
+	fmt.Printf("address:%v\n", address)
 }
