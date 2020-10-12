@@ -1,19 +1,3 @@
-// Copyright 2017 The go-ethereum Authors
-// This file is part of go-ethereum.
-//
-// go-ethereum is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// go-ethereum is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with go-ethereum. If not, see <http://www.gnu.org/licenses/>.
-
 package main
 
 import (
@@ -21,7 +5,12 @@ import (
 	"encoding/hex"
 	"flag"
 	"fmt"
+	"log"
+	"os"
+	"path/filepath"
+	"strings"
 
+	"github.com/360EntSecGroup-Skylar/excelize"
 	"github.com/PlatONnetwork/PlatON-Go/cmd/utils"
 	"github.com/PlatONnetwork/PlatON-Go/crypto"
 	"github.com/PlatONnetwork/PlatON-Go/crypto/bls"
@@ -35,21 +24,53 @@ const (
 	VersionPatch = 2  // Patch version component of the current release
 )
 
-type nodekeypair struct {
-	PrivateKey string
-	PublicKey  string
+const initProgramVersion = uint32(VersionMajor<<16 | VersionMinor<<8 | VersionPatch)
+
+type keyInfo struct {
+	nodePublicKey  string
+	nodePrivateKey string
+	versionSign    string
+	blsPublicKey   string
+	blsPrivateKey  string
+	blsProof       string
 }
 
-type blskeypair struct {
-	PrivateKey string
-	PublicKey  string
+func GetCurrentPath() string {
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return strings.Replace(dir, "\\", "/", -1)
 }
 
 func main() {
-	nodeCountFlag := flag.Int("count", 1, "Number of nodes")
+
+	nodeCountFlag := flag.Int("count", 0, "Number of nodes")
 	flag.Parse()
 
+	if 0 == *nodeCountFlag {
+		utils.Fatalf("指定生成节点信息个数为0!!!")
+	}
+
+	sheetName := "keyInfos"
+	strVersion := fmt.Sprintf("%d", initProgramVersion)
+	f := excelize.NewFile()
+	// 创建一个工作表
+	index := f.NewSheet(sheetName)
+	// 设置工作簿的默认工作表
+	f.SetActiveSheet(index)
+	f.DeleteSheet("Sheet1")
+	f.SetCellValue(sheetName, "A1", "nodeid")
+	f.SetCellValue(sheetName, "B1", "nodePrivateKey")
+	f.SetCellValue(sheetName, "C1", "version")
+	f.SetCellValue(sheetName, "D1", "version_sign")
+	f.SetCellValue(sheetName, "E1", "blsPublicKey")
+	f.SetCellValue(sheetName, "F1", "blsPrivateKey")
+	f.SetCellValue(sheetName, "G1", "blsProof")
+
+	nIndex := 2
 	for i := 0; i < *nodeCountFlag; i++ {
+		keyInfo := keyInfo{}
 		// 生成nodeid和nodekey
 		// Check if keyfile path given and make sure it doesn't already exist.
 		var nodePrivateKey *ecdsa.PrivateKey
@@ -61,12 +82,11 @@ func main() {
 		}
 
 		// Output some information.
-		out := nodekeypair{
-			PublicKey:  hex.EncodeToString(crypto.FromECDSAPub(&nodePrivateKey.PublicKey)[1:]),
-			PrivateKey: hex.EncodeToString(crypto.FromECDSA(nodePrivateKey)),
-		}
-		fmt.Printf("nodeid: %v\n", out.PublicKey)
-		fmt.Printf("node prikey: %v\n", out.PrivateKey)
+		keyInfo.nodePrivateKey = hex.EncodeToString(crypto.FromECDSA(nodePrivateKey))
+		keyInfo.nodePublicKey = hex.EncodeToString(crypto.FromECDSAPub(&nodePrivateKey.PublicKey)[1:])
+
+		// fmt.Printf("nodeid: %v\n", keyInfo.nodePublicKey)
+		// fmt.Printf("node prikey: %v\n", keyInfo.nodePrivateKey)
 
 		// 生成版本签名
 		node.GetCryptoHandler().SetPrivateKey(nodePrivateKey)
@@ -75,10 +95,10 @@ func main() {
 				crypto.HexMustToECDSA("40a2d01c7b10d19dbdd8b0c04be82d368b3d65a0a3f35e5c9c99eb81229298f7"))
 		*/
 
-		initProgramVersion := uint32(VersionMajor<<16 | VersionMinor<<8 | VersionPatch)
 		versionSign := node.GetCryptoHandler().MustSign(initProgramVersion)
-		fmt.Printf("version: %v\n", initProgramVersion)
-		fmt.Printf("sign: %v\n", hex.EncodeToString(versionSign))
+		keyInfo.versionSign = hex.EncodeToString(versionSign)
+		// fmt.Printf("version: %v\n", initProgramVersion)
+		// fmt.Printf("sign: %v\n", keyInfo.versionSign)
 
 		// 生成blspubkey和blskey
 		err = bls.Init(int(bls.BLS12_381))
@@ -88,19 +108,19 @@ func main() {
 		var blsPrivateKey bls.SecretKey
 		blsPrivateKey.SetByCSPRNG()
 		blsPubKey := blsPrivateKey.GetPublicKey()
-		blsInfo := blskeypair{
-			PrivateKey: hex.EncodeToString(blsPrivateKey.GetLittleEndian()),
-			PublicKey:  hex.EncodeToString(blsPubKey.Serialize()),
-		}
-		fmt.Printf("bls public key: %v\n", blsInfo.PublicKey)
-		fmt.Printf("bls prikey: %v\n", blsInfo.PrivateKey)
+		keyInfo.blsPrivateKey = hex.EncodeToString(blsPrivateKey.GetLittleEndian())
+		keyInfo.blsPublicKey = hex.EncodeToString(blsPubKey.Serialize())
+
+		// fmt.Printf("bls public key: %v\n", keyInfo.blsPublicKey)
+		// fmt.Printf("bls prikey: %v\n", keyInfo.blsPrivateKey)
 
 		// 生成零知识证明
 		proof, _ := blsPrivateKey.MakeSchnorrNIZKP()
 		proofByte, _ := proof.MarshalText()
 		var proofHex bls.SchnorrProofHex
 		proofHex.UnmarshalText(proofByte)
-		fmt.Printf("proof: %v\n", proofHex)
+		keyInfo.blsProof = proofHex.String()
+		// fmt.Printf("string proof: %v\n", keyInfo.blsProof)
 
 		/*
 			err = proof.VerifySchnorrNIZK(*blsPubKey)
@@ -109,7 +129,24 @@ func main() {
 			}
 		*/
 
-		// 保存xlsx文件
+		// fmt.Print("=======================\n")
+
+		f.SetCellValue(sheetName, fmt.Sprintf("A%d", nIndex), keyInfo.nodePublicKey)
+		f.SetCellValue(sheetName, fmt.Sprintf("B%d", nIndex), keyInfo.nodePrivateKey)
+		f.SetCellValue(sheetName, fmt.Sprintf("C%d", nIndex), strVersion)
+		f.SetCellValue(sheetName, fmt.Sprintf("D%d", nIndex), keyInfo.versionSign)
+		f.SetCellValue(sheetName, fmt.Sprintf("E%d", nIndex), keyInfo.blsPublicKey)
+		f.SetCellValue(sheetName, fmt.Sprintf("F%d", nIndex), keyInfo.blsPrivateKey)
+		f.SetCellValue(sheetName, fmt.Sprintf("G%d", nIndex), keyInfo.blsProof)
+
+		nIndex++
 	}
-	fmt.Printf("生成虚拟节点信息成功!\n")
+	strPath := GetCurrentPath()
+	strPath = filepath.Join(strPath, "keyInfos.xlsx")
+	if err := f.SaveAs(strPath); err != nil {
+		fmt.Println(err)
+	}
+	// 保存xlsx文件
+	fmt.Printf("生成虚拟节点信息成功, 生成文件路径: %v\n", strPath)
+
 }
