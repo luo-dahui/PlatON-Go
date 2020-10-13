@@ -62,11 +62,11 @@ func main() {
 	f.SetActiveSheet(index)
 	f.DeleteSheet("Sheet1")
 	f.SetCellValue(sheetName, "A1", "nodeid")
-	f.SetCellValue(sheetName, "B1", "nodePrivateKey")
+	f.SetCellValue(sheetName, "B1", "nodePriKey")
 	f.SetCellValue(sheetName, "C1", "version")
 	f.SetCellValue(sheetName, "D1", "version_sign")
-	f.SetCellValue(sheetName, "E1", "blsPublicKey")
-	f.SetCellValue(sheetName, "F1", "blsPrivateKey")
+	f.SetCellValue(sheetName, "E1", "blsPubKey")
+	f.SetCellValue(sheetName, "F1", "blsPriKey")
 	f.SetCellValue(sheetName, "G1", "blsProof")
 
 	nIndex := 2
