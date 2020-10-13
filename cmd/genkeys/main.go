@@ -22,6 +22,8 @@ const (
 	VersionMajor = 0  // Major version component of the current release
 	VersionMinor = 13 // Minor version component of the current release
 	VersionPatch = 2  // Patch version component of the current release
+
+	sheetName = "key_info" // execl文件sheet名称
 )
 
 const initProgramVersion = uint32(VersionMajor<<16 | VersionMinor<<8 | VersionPatch)
@@ -52,7 +54,6 @@ func main() {
 		utils.Fatalf("指定生成节点信息个数为0!!!")
 	}
 
-	sheetName := "keyInfos"
 	strVersion := fmt.Sprintf("%d", initProgramVersion)
 	f := excelize.NewFile()
 	// 创建一个工作表
@@ -142,7 +143,7 @@ func main() {
 		nIndex++
 	}
 	strPath := GetCurrentPath()
-	strPath = filepath.Join(strPath, "keyInfos.xlsx")
+	strPath = filepath.Join(strPath, "key_info.xlsx")
 	if err := f.SaveAs(strPath); err != nil {
 		fmt.Println(err)
 	}
