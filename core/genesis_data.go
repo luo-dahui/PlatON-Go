@@ -92,7 +92,7 @@ func genesisStakingData(genesisDataCollector *common.GenesisData, prevHash commo
 			},
 		}
 
-		mutable := &staking.CandidateMutable{
+		mutable := &staking.CandidateMutableV1{
 			Status:             staking.Valided,
 			StakingEpoch:       uint32(0),
 			Shares:             new(big.Int).Set(xcom.GeneStakingAmount),
