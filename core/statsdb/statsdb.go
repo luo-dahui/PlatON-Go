@@ -55,7 +55,7 @@ func (db *StatsDB) WriteGenesisData(data *common.GenesisData) {
 		if err := db.PutLevelDB(blockNumber.Bytes(), jsonBytes); err != nil {
 			log.Crit("Failed to write genesis data", "data", common.Bytes2Hex(jsonBytes), "err", err)
 		} else {
-			log.Info("Success to write genesis data", "data", string(jsonBytes))
+			log.Info("WriteGenesisData genesisDataCollector Success to write genesis data", "data", string(jsonBytes))
 		}
 	}
 }

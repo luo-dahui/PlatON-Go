@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/PlatONnetwork/PlatON-Go/common/hexutil"
-
 	"github.com/PlatONnetwork/PlatON-Go/log"
 )
 
@@ -129,7 +128,48 @@ type EmbedContractTx struct {
 	Input           string  `json:"input,omitempty"` //hex string
 }
 
+type EcCommonConfig struct {
+	MaxEpochMinutes     uint64 `json:"maxEpochMinutes"`     // 结算周期最大值（分钟）
+	NodeBlockTimeWindow uint64 `json:"nodeBlockTimeWindow"` // 出块窗口时间 (秒)
+	PerRoundBlocks      uint64 `json:"perRoundBlocks"`      // 一个共识论，每个节点出块数量
+	MaxConsensusVals    uint64 `json:"maxConsensusVals"`    // 每个共识论，验证人数量的最大值
+	AdditionalCycleTime uint64 `json:"additionalCycleTime"` // 增发周期 (分钟)
+}
+
+type EcStakingConfig struct {
+	StakeThreshold          *big.Int `json:"stakeThreshold"`          // 质押门槛（LAT)
+	OperatingThreshold      *big.Int `json:"operatingThreshold"`      // //增加/减少委托，或者增加质押时，允许的最小数量；当减少委托时，如果剩余委托数量小于此值，这此次减少委托操作，将导致撤销所有委托。
+	MaxValidators           uint64   `json:"maxValidators"`           // 每个结算周期最多的备选节点数量（101个）
+	UnStakeFreezeDuration   uint64   `json:"unStakeFreezeDuration"`   // 解除质押时，资金将被冻结的结算周期数量（注意节点如参与治理投票的情况）
+	RewardPerMaxChangeRange uint16   `json:"rewardPerMaxChangeRange"` // 修改质押信息时，可以修改委托分红比例。但是和原比例的偏差有个允许范围。
+	RewardPerChangeInterval uint16   `json:"rewardPerChangeInterval"` // 修改质押信息时，可以修改委托分红比例。但是需要和上次修改分红比例间隔一段时间(epoch)
+}
+
+type EcRewardConfig struct {
+	NewBlockRate          uint64 `json:"newBlockRate"`          // 在计算下颚结算周期的奖励时，出块奖励占总奖励的百分比。（剩下的就是质押奖励）
+	PlatONFoundationYear  uint32 `json:"platonFoundationYear"`  // 基金会从第几次参与增发（为了鼓励开发者，PlatON开始几次的增发金额都转入开发者基金，后续的增发，才有部分转入基金会）。链的创世块中已做了一次（增）发行。所以配置项值需从2开始，当配置成2时，链第一年末的增发就需分配资金到基金会。实际上，配置成1，和配置成2的效果一样。
+	IncreaseIssuanceRatio uint16 `json:"increaseIssuanceRatio"` // 增发比例，基数是目前的发行总量（也即上次增发后的总量）
+}
+
+type EcSlashingConfig struct {
+	SlashFractionDuplicateSign uint32 `json:"slashFractionDuplicateSign"` // 节点双签时的处罚比例（1%%,基数是有效质押）
+	DuplicateSignReportReward  uint32 `json:"duplicateSignReportReward"`  // 节点举报其它节点双签的奖励百分比（1%，基数是双签时的处罚金)
+	MaxEvidenceAge             uint32 `json:"maxEvidenceAge"`             // 法定证据追诉期（epoch数量），超过这个期限，将不再惩罚。
+	SlashBlocksReward          uint32 `json:"slashBlocksReward"`          // 0出块惩罚时，惩罚多少个区块的出块奖励
+	ZeroProduceCumulativeTime  uint16 `json:"zeroProduceCumulativeTime"`  // 0出块统计的时间范围（共识论）
+	ZeroProduceNumberThreshold uint16 `json:"zeroProduceNumberThreshold"` // 在0出块统计时间内，节点0出块次数达到此值，将被处罚。
+	ZeroProduceFreezeDuration  uint64 `json:"zeroProduceFreezeDuration"`  // 节点在0出块惩罚后，如果剩余质押金足够（大于质押金最低要求），节点将被冻结指定的时间（epoch），冻结期满后，质押状态将重新恢复到正常状态。如果节点先被0出块处罚，接着被双签举报，那冻结器满后，会被解质押。
+}
+
 type GenesisData struct {
+	ChainID                   *big.Int           `json:"chainID,omitempty"`           //链ID
+	PlatONFundAccount         Address            `json:"platONFundAccount,omitempty"` //PlatON基金会地址
+	CDFAccount                Address            `json:"cDFAccount,omitempty"`        //开发者基金地址
+	IssueAmount               *big.Int           `json:"issueAmount,omitempty"`       //发行金额
+	EcCommonConfig            *EcCommonConfig    `json:"ecCommonConfig,omitempty"`    //配置项
+	EcStakingConfig           *EcStakingConfig   `json:"ecStakingConfig,omitempty"`   //配置项
+	EcRewardConfig            *EcRewardConfig    `json:"ecStakingConfig,omitempty"`   //配置项
+	EcSlashingConfig          *EcSlashingConfig  `json:"ecSlashingConfig,omitempty"`  //配置项
 	AllocItemList             []*AllocItem       `json:"allocItemList,omitempty"`
 	StakingItemList           []*StakingItem     `json:"stakingItemList,omitempty"`
 	RestrictingCreateItemList []*RestrictingItem `json:"restrictingCreateItemList,omitempty"`
@@ -158,6 +198,14 @@ type InitFundItem struct {
 	From   Address  `json:"from,omitempty"`
 	To     Address  `json:"to,omitempty"`
 	Amount *big.Int `json:"amount,omitempty"`
+}
+
+func (g *GenesisData) AddEconomicConfig(common *EcCommonConfig, staking *EcStakingConfig,
+	reward *EcRewardConfig, slashing *EcSlashingConfig) {
+	g.EcCommonConfig = common
+	g.EcStakingConfig = staking
+	g.EcRewardConfig = reward
+	g.EcSlashingConfig = slashing
 }
 
 func (g *GenesisData) AddAllocItem(address Address, amount *big.Int) {

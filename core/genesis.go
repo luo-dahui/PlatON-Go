@@ -22,12 +22,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/PlatONnetwork/PlatON-Go/core/statsdb"
-	"github.com/PlatONnetwork/PlatON-Go/x/gov"
 	"io"
 	"math/big"
 	"os"
 	"strings"
+
+	"github.com/PlatONnetwork/PlatON-Go/core/statsdb"
+	"github.com/PlatONnetwork/PlatON-Go/x/gov"
 
 	"github.com/PlatONnetwork/PlatON-Go/core/snapshotdb"
 
@@ -378,6 +379,16 @@ func (g *Genesis) ToBlock(db ethdb.Database, sdb snapshotdb.BaseDB) *types.Block
 	statedb.AddBalance(xcom.PlatONFundAccount(), xcom.PlatONFundBalance())
 	statedb.AddBalance(xcom.CDFAccount(), xcom.CDFBalance())
 
+	//stats: 收集GenesisData
+	genesisDataCollector.ChainID = g.Config.ChainID
+	genesisDataCollector.PlatONFundAccount = xcom.PlatONFundAccount() // PlatON基金会地址
+	genesisDataCollector.CDFAccount = xcom.CDFAccount()               //开发者基金地址
+	// 收集经济模型参数
+	genesisDataCollector.AddEconomicConfig((*common.EcCommonConfig)(&g.EconomicModel.Common),
+		(*common.EcStakingConfig)(&g.EconomicModel.Staking),
+		(*common.EcRewardConfig)(&g.EconomicModel.Reward),
+		(*common.EcSlashingConfig)(&g.EconomicModel.Slashing))
+
 	//stats: 收集PlatONFund基金的初始化值
 	genesisDataCollector.AddAllocItem(xcom.PlatONFundAccount(), xcom.PlatONFundBalance())
 
@@ -406,7 +417,7 @@ func (g *Genesis) ToBlock(db ethdb.Database, sdb snapshotdb.BaseDB) *types.Block
 	//跟踪系统: update chain_env.issue_time=0, chain_env.issue_block=0，
 	//update chain_env.issue_amount, chain_env.total_issue_amount,
 	//update chain_env.age, chain_env.reward_pool_available = findBalance(RewardManagerPoolAddr)
-
+	genesisDataCollector.IssueAmount = genesisIssuance //发行金额
 	log.Debug("genesisIssuance", "amount", genesisIssuance)
 
 	var initDataStateHash = common.ZeroHash
